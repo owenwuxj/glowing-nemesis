@@ -73,7 +73,7 @@
         //pocketsphinxController.outputAudio = TRUE;
 #ifdef kGetNbest
         pocketsphinxController.returnNbest = TRUE;
-        pocketsphinxController.nBestNumber = 5;
+        pocketsphinxController.nBestNumber = 1;
 #endif
     }
     return pocketsphinxController;
@@ -92,7 +92,7 @@
 - (void) startListening {
     // But under normal circumstances you'll probably want to do continuous recognition as follows:
     self.pocketsphinxController.returnNullHypotheses = TRUE;
-    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
+//    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
     
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
@@ -100,6 +100,9 @@
                                            acousticModelAtPath:[AcousticModel pathToModel:@"AcousticModelEnglish"]
                                            languageModelIsJSGF:YES];
 }
+
+#pragma mark -
+#pragma mark View Lifecycle
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -165,12 +168,15 @@
                 NSString *directory = documentsDirectoryURL.path;
                 
                 fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
+                wavFilePath = [NSString stringWithString:fileNameString];
+                
+                NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
 
                 aSentence = nil;
                 self.preGrammarDict = [NSMutableDictionary dictionary];
                 
                 // XML formatted Strings are strange
-                NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithContentsOfURL:[NSURL URLWithString:fileNameString]];//[contextXml dataUsingEncoding:NSUTF8StringEncoding]];
+                NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:xmlData];//[contextXml dataUsingEncoding:NSUTF8StringEncoding]];
                 xmlParser.delegate = self;
                 
                 if ([xmlParser parse] == NO ) {
@@ -289,6 +295,11 @@
 - (void) pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
     
     NSLog(@"The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
+
+    if (!hypothesis) {
+        [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:nil];
+        return;
+    }
 }
 
 #ifdef kGetNbest
@@ -358,13 +369,13 @@
     
     NSLog(@"parserDidEndDocument?%@",self.preGrammarDict);
     
-    //    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : @[
-    //                                           @"WHAT TIME IS IT",
-    //                                           @"HOW ARE YOU",
-    //                                           @"WHERE ARE YOU",
-    //                                           @"WHERE IS IT",
-    //                                           ],
-    //                                   };
+//    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : @[
+//                                           @"WHAT TIME IS IT",
+//                                           @"HOW ARE YOU",
+//                                           @"WHERE ARE YOU",
+//                                           @"WHERE IS IT",
+//                                           ],
+//                                   };
     
     NSDictionary *grammarDict;
     NSArray *theArray = [self.preGrammarDict allValues];
@@ -429,12 +440,6 @@
 #pragma mark Private Methods
 
 -(void) compareOpenEarsOutputString:(NSString *)aResult andQitaiXMLString:(NSString *)resultXmlString {// And write to disk
-    //    NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
-    //    xmlParser.delegate = self;
-    //
-    //    if ([xmlParser parse] == YES) {
-    //        NSLog(@"");
-    //    }
     
     NSDictionary * xmlDictionaryFromOE = [[XMLDictionaryParser sharedInstance] dictionaryWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
     NSDictionary * xmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:resultXmlString];
@@ -499,8 +504,7 @@
         NSMutableArray *origArray = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:correctSentID] componentsSeparatedByString:@" "]];
         int numOfWords = [origArray count];// if "6543" -> "six five four three"(should be one word!)
         
-        //        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
-        
+//        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
         // TODO: should show word by word ?
         int resultNumOfWords = [[resultString componentsSeparatedByString:@" "] count];
         int leftoverNumOfWords = [origArrayLeftover count];
@@ -520,7 +524,7 @@
             }
             
             // Step 2: Get the Index
-            int startingIdx;
+            int startingIdx = 0;
             for (NSNumber *theIdx in [tempDic allKeys]) {
                 if ([[tempDic objectForKey:theIdx] isEqualToString:resultString]) {
                     startingIdx = [theIdx intValue];
