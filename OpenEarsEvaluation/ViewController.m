@@ -39,7 +39,7 @@
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
 
-@property (nonatomic, strong) DISPATCH_QUEUE_SERIAL concurrentPhotoQueue;
+@property (nonatomic, strong) dispatch_queue_t concurrentPhotoQueue;
 
 @end
 
@@ -162,33 +162,41 @@
         if (!isDirectory) {
             NSLog(@"file:%@", file);
             
-            if ([[file substringFromIndex:[file length] - 7] isEqualToString:@"context"]) {
-                
-                NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-                NSString *directory = documentsDirectoryURL.path;
-                
-                fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
-                wavFilePath = [NSString stringWithString:fileNameString];
-                
-                NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
+            dispatch_sync(self.concurrentPhotoQueue, ^{
+                [self evaluateFiles:file];
+            });
+            
 
-                aSentence = nil;
-                self.preGrammarDict = [NSMutableDictionary dictionary];
-                
-                // XML formatted Strings are strange
-                NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:xmlData];//[contextXml dataUsingEncoding:NSUTF8StringEncoding]];
-                xmlParser.delegate = self;
-                
-                if ([xmlParser parse] == NO ) {
-                    NSLog(@"Failed to start xml parser");
-                } else {
-                    //        NSLog(@"%@",xmlData);
-                }
-            }
 
         }
         else {
             [self openEachFileAt:file];
+        }
+    }
+}
+
+- (void)evaluateFiles:(NSString *)file {
+    if ([[file substringFromIndex:[file length] - 7] isEqualToString:@"context"]) {
+        
+        NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+        NSString *directory = documentsDirectoryURL.path;
+        
+        fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
+        wavFilePath = [NSString stringWithString:fileNameString];
+        
+        NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
+        
+        aSentence = nil;
+        self.preGrammarDict = [NSMutableDictionary dictionary];
+        
+        // XML formatted Strings are strange
+        NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:xmlData];//[contextXml dataUsingEncoding:NSUTF8StringEncoding]];
+        xmlParser.delegate = self;
+        
+        if ([xmlParser parse] == NO ) {
+            NSLog(@"Failed to start xml parser");
+        } else {
+            //        NSLog(@"%@",xmlData);
         }
     }
 }
