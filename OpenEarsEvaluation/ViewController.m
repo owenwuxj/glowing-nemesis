@@ -97,6 +97,9 @@
                                            languageModelIsJSGF:YES];
 }
 
+#pragma mark -
+#pragma mark View Lifecycle
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
@@ -347,13 +350,13 @@
     
     NSLog(@"parserDidEndDocument?%@",self.preGrammarDict);
     
-    //    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : @[
-    //                                           @"WHAT TIME IS IT",
-    //                                           @"HOW ARE YOU",
-    //                                           @"WHERE ARE YOU",
-    //                                           @"WHERE IS IT",
-    //                                           ],
-    //                                   };
+//    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : @[
+//                                           @"WHAT TIME IS IT",
+//                                           @"HOW ARE YOU",
+//                                           @"WHERE ARE YOU",
+//                                           @"WHERE IS IT",
+//                                           ],
+//                                   };
     
     NSDictionary *grammarDict;
     NSArray *theArray = [self.preGrammarDict allValues];
@@ -488,8 +491,7 @@
         NSMutableArray *origArray = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:correctSentID] componentsSeparatedByString:@" "]];
         int numOfWords = [origArray count];// if "6543" -> "six five four three"(should be one word!)
         
-        //        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
-        
+//        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
         // TODO: should show word by word ?
         int resultNumOfWords = [[resultString componentsSeparatedByString:@" "] count];
         int leftoverNumOfWords = [origArrayLeftover count];
@@ -509,7 +511,7 @@
             }
             
             // Step 2: Get the Index
-            int startingIdx;
+            int startingIdx = 0;
             for (NSNumber *theIdx in [tempDic allKeys]) {
                 if ([[tempDic objectForKey:theIdx] isEqualToString:resultString]) {
                     startingIdx = [theIdx intValue];
