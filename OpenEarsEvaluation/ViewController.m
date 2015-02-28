@@ -15,6 +15,8 @@
 #import <OpenEars/OpenEarsLogging.h>
 #import <OpenEars/AcousticModel.h>
 
+
+
 #import "TPWordNormalizer.h"
 #import "XMLDictionary.h"
 
@@ -36,6 +38,8 @@
 @property (nonatomic, strong) NSMutableDictionary *preGrammarDict;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
+
+@property (nonatomic, strong) DISPATCH_QUEUE_SERIAL concurrentPhotoQueue;
 
 @end
 
@@ -127,6 +131,7 @@
         self.statusLabel.textColor = [UIColor redColor];
         
         [self downloadFile];
+        
     } else if (!isFileUnzipped) {
         // TODO
     } else {
@@ -155,6 +160,7 @@
             NSLog(@"file:%@", file);
             
             if ([[file substringFromIndex:[file length] - 7] isEqualToString:@"context"]) {
+                
                 NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
                 NSString *directory = documentsDirectoryURL.path;
                 
@@ -226,11 +232,16 @@
         self.progressView.progress = percentage / 100.0f;
     };
     if (!success){
+
+        self.statusLabel.text = @"Unzipping Failed";
+        self.statusLabel.textColor = [UIColor redColor];
         
     } else {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kFileUnzipped];
         self.statusLabel.text = @"Unzipping Finished";
         self.statusLabel.textColor = [UIColor greenColor];
+        
+        [self downloadFile];
     }
     
 }
