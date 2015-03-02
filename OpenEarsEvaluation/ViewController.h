@@ -16,21 +16,6 @@
 
 @interface ViewController : UIViewController <OpenEarsEventsObserverDelegate, NSXMLParserDelegate> {
     
-    /*
-     // --------------------------------------------------------------------------------------------------------
-     // These three are important OpenEars classes that ViewController demonstrates the use of. There is a fourth important class (LanguageModelGenerator) demonstrated
-     // inside the ViewController implementation in the method viewDidLoad.
-     // --------------------------------------------------------------------------------------------------------
-     */
-    OpenEarsEventsObserver *openEarsEventsObserver; // A class whose delegate methods which will allow us to stay informed of changes in the Flite and Pocketsphinx statuses.
-    PocketsphinxController *pocketsphinxController; // The controller for Pocketsphinx (voice recognition).
-    
-    // --------------------------------------------------------------------------------------------------------
-    // Helper Flags
-    BOOL usingStartLanguageModel;
-    int restartAttemptsDueToPermissionRequests;
-    BOOL startupFailedDueToLackOfPermissions;
-    
     // --------------------------------------------------------------------------------------------------------
     // Our NSTimer that will help us read and display the input and output levels without locking the UI
     NSTimer *uiUpdateTimer; // For Updating some UI

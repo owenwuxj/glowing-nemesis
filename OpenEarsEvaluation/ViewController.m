@@ -35,9 +35,10 @@
 }
 
 @property (nonatomic, strong) NSMutableDictionary *preGrammarDict;
-@property (weak, nonatomic) IBOutlet UIProgressView *progressView;
-@property (weak, nonatomic) IBOutlet UILabel *statusLabel;
 @property (nonatomic, strong) NSString *wavFilePath;
+
+@property (nonatomic, weak) IBOutlet UIProgressView *progressView;
+@property (nonatomic, weak) IBOutlet UILabel *statusLabel;
 
 @property (nonatomic, strong) dispatch_semaphore_t sema;
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -45,15 +46,6 @@
 @end
 
 @implementation ViewController
-
-@synthesize pocketsphinxController;
-@synthesize openEarsEventsObserver;
-@synthesize usingStartLanguageModel;
-@synthesize restartAttemptsDueToPermissionRequests;
-@synthesize startupFailedDueToLackOfPermissions;
-
-@synthesize pathToDictionaryToStartAppWith;
-@synthesize pathToGrammarToStartAppWith;
 
 #define kPassPercentage 59.0
 #define kLevelUpdatesPerSecond 18 // We'll have the ui update 18 times a second to show some fluidity without hitting the CPU too hard.
@@ -64,42 +56,28 @@
 
 // Lazily allocated PocketsphinxController.
 - (PocketsphinxController *)pocketsphinxController {
-    if (pocketsphinxController == nil) {
-        pocketsphinxController = [[PocketsphinxController alloc] init];
+    if (_pocketsphinxController == nil) {
+        _pocketsphinxController = [[PocketsphinxController alloc] init];
         //pocketsphinxController.verbosePocketSphinx = TRUE; // Uncomment me for verbose debug output
         //pocketsphinxController.outputAudio = TRUE;
-        pocketsphinxController.returnNullHypotheses = YES;
+        _pocketsphinxController.returnNullHypotheses = YES;
 #ifdef kGetNbest
-        pocketsphinxController.returnNbest = TRUE;
-        pocketsphinxController.nBestNumber = 1;
+        _pocketsphinxController.returnNbest = TRUE;
+        _pocketsphinxController.nBestNumber = 1;
 #endif
     }
-    return pocketsphinxController;
+    return _pocketsphinxController;
 }
 
 // Lazily allocated OpenEarsEventsObserver.
 - (OpenEarsEventsObserver *)openEarsEventsObserver {
-    if (openEarsEventsObserver == nil) {
-        openEarsEventsObserver = [[OpenEarsEventsObserver alloc] init];
+    if (_openEarsEventsObserver == nil) {
+        _openEarsEventsObserver = [[OpenEarsEventsObserver alloc] init];
     }
-    return openEarsEventsObserver;
+    return _openEarsEventsObserver;
 }
 
-// The last class we're using here is LanguageModelGenerator but I don't think it's advantageous to lazily instantiate it. You can see how it's used below.
 
-- (void) startListening {
-    // But under normal circumstances you'll probably want to do continuous recognition as follows:
-    self.pocketsphinxController.returnNullHypotheses = TRUE;
-//    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
-    
-    NSLog(@"startListening, on Thread: %@", [NSThread currentThread]);
-    
-    [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
-                                      usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
-                                              dictionaryAtPath:self.pathToDictionaryToStartAppWith
-                                           acousticModelAtPath:[AcousticModel pathToModel:@"AcousticModelEnglish"]
-                                           languageModelIsJSGF:YES];
-}
 
 #pragma mark -
 #pragma mark View Lifecycle
@@ -117,14 +95,6 @@
     
     self.sema = dispatch_semaphore_create(0);
     self.queue = dispatch_queue_create("com.example.subsystem.taskAsr", NULL);
-    
-    // Do any additional setup after loading the view, typically from a nib.
-
-//    NSArray *docPaths = NSSearchPathForDirectoriesInDomains(NSApplicationDirectory, NSUserDomainMask, YES);
-//    NSString *documentPaths = [docPaths objectAtIndex:0];
-
-//    NSString *recoursePaths = [[NSBundle mainBundle] resourcePath];
-//    [self openEachFileAt:recoursePaths];
     
     BOOL isFileDownloaded = [[NSUserDefaults standardUserDefaults] boolForKey:kFileDownloaded];
     BOOL isFileUnzipped = [[NSUserDefaults standardUserDefaults] boolForKey:kFileUnzipped];
@@ -151,6 +121,26 @@
         [self downloadFile];
 }
 
+
+- (IBAction)onResetButtonTapped:(id)sender {
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kFileDownloaded];
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kFileUnzipped];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+    NSString *directory = documentsDirectoryURL.path;
+    NSError *error = nil;
+    for (NSString *file in [fm contentsOfDirectoryAtPath:directory error:&error]) {
+        BOOL success = [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", directory, file] error:&error];
+        if (!success || error) {
+            // it failed.
+        }
+    }
+    
+}
+
+
 - (void)openEachFileAt:(NSString *)path {
     
     NSString *file;
@@ -163,12 +153,11 @@
         if (!isDirectory) {
             NSLog(@"file:%@", file);
             
-
+            [self evaluateFiles:file];
             dispatch_async(self.queue, ^{
-                [self evaluateFiles:file];
+                
             });
-            
-            dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
+//            dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
 
 
         }
@@ -216,7 +205,7 @@
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
     AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
     
-    NSURL *URL = [NSURL URLWithString:@"http://10.128.39.55:8888/audio-sample.zip"];
+    NSURL *URL = [NSURL URLWithString:@"http://10.128.43.56:8888/audio-sample.zip"];
     NSURLRequest *request = [NSURLRequest requestWithURL:URL];
     
     NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
@@ -266,31 +255,6 @@
         [self downloadFile];
     }
     
-}
-
-- (IBAction)onResetButtonTapped:(id)sender {
-    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kFileDownloaded];
-    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kFileUnzipped];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-    NSString *directory = documentsDirectoryURL.path;
-    NSError *error = nil;
-    for (NSString *file in [fm contentsOfDirectoryAtPath:directory error:&error]) {
-        BOOL success = [fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", directory, file] error:&error];
-        if (!success || error) {
-            // it failed.
-        }
-    }
-
-}
-
-#pragma mark -
-#pragma mark Memory Management
-
-- (void)dealloc {
-    openEarsEventsObserver.delegate = nil;
 }
 
 #pragma mark -
@@ -585,6 +549,22 @@
     NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
     
     [self compareOpenEarsOutputString:theResult andQitaiXMLString:xmlString];
+}
+
+// The last class we're using here is LanguageModelGenerator but I don't think it's advantageous to lazily instantiate it. You can see how it's used below.
+
+- (void) startListening {
+    // But under normal circumstances you'll probably want to do continuous recognition as follows:
+    self.pocketsphinxController.returnNullHypotheses = TRUE;
+    //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
+    
+    NSLog(@"startListening, on Thread: %@", [NSThread currentThread]);
+    
+    [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
+                                      usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
+                                              dictionaryAtPath:self.pathToDictionaryToStartAppWith
+                                           acousticModelAtPath:[AcousticModel pathToModel:@"AcousticModelEnglish"]
+                                           languageModelIsJSGF:YES];
 }
 
 @end
