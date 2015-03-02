@@ -179,7 +179,7 @@
         NSString *directory = documentsDirectoryURL.path;
         
         fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
-//        self.wavFilePath = [NSString stringWithString:fileNameString];
+        self.wavFilePath = [NSString stringWithFormat:@"%@/%@.wav",directory,[file substringToIndex:[file length]-8]];
         
         NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
         
@@ -388,6 +388,7 @@
         NSString *lmPath = [grammarLangGenDict objectForKey:@"LMPath"];
         NSString *dictionaryPath = [grammarLangGenDict objectForKey:@"DictionaryPath"];
         
+
         self.pathToGrammarToStartAppWith = lmPath; // We'll set our new .languagemodel file to be the one to get switched to when the words "CHANGE MODEL" are recognized.
         self.pathToDictionaryToStartAppWith = dictionaryPath; // We'll set our new dictionary to be the one to get switched to when the words "CHANGE MODEL" are recognized.
     }
