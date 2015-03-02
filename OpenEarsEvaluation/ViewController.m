@@ -113,7 +113,9 @@
         NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
         NSString *directory = documentsDirectoryURL.path;
         
-        [self openEachFileAt:directory];
+        dispatch_async(dispatch_queue_create("com.example.subsystem.taskFile", NULL), ^{
+            [self openEachFileAt:directory];
+        });
     }
     
 }
@@ -153,13 +155,13 @@
         if (!isDirectory) {
             NSLog(@"file:%@", file);
             
-            [self evaluateFiles:file];
+            
             dispatch_async(self.queue, ^{
-                
+                [self evaluateFiles:file];
             });
-//            dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
-
-
+            dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
+            NSLog(@"Test");
+            
         }
         else {
             [self openEachFileAt:file];
