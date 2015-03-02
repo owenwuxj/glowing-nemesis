@@ -54,10 +54,6 @@
 
 @synthesize pathToDictionaryToStartAppWith;
 @synthesize pathToGrammarToStartAppWith;
-@synthesize pathToFirstDynamicallyGeneratedLanguageModel;
-@synthesize pathToFirstDynamicallyGeneratedDictionary;
-@synthesize pathToSecondDynamicallyGeneratedLanguageModel;
-@synthesize pathToSecondDynamicallyGeneratedDictionary;
 
 #define kPassPercentage 59.0
 #define kLevelUpdatesPerSecond 18 // We'll have the ui update 18 times a second to show some fluidity without hitting the CPU too hard.
@@ -192,7 +188,7 @@
         NSString *directory = documentsDirectoryURL.path;
         
         fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
-        self.wavFilePath = [NSString stringWithString:fileNameString];
+//        self.wavFilePath = [NSString stringWithString:fileNameString];
         
         NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
         
@@ -220,7 +216,7 @@
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
     AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
     
-    NSURL *URL = [NSURL URLWithString:@"http://10.128.37.194:8888/audio-sample.zip"];
+    NSURL *URL = [NSURL URLWithString:@"http://10.128.39.55:8888/audio-sample.zip"];
     NSURLRequest *request = [NSURLRequest requestWithURL:URL];
     
     NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
@@ -374,7 +370,7 @@
         //
         NSString *temp = [attributeDict objectForKey:@"display_trans"];
         NSArray *cleanWordArray = [[TPWordNormalizer manager] returnArrayByProcessWordString:temp];
-        NSLog(@"222 %lu", (unsigned long)[cleanWordArray count]);
+        NSLog(@"222 %@", [cleanWordArray firstObject]);
         
         // '1376' will be 'one three seven six'
         for (NSString *oneNumber in cleanWordArray) {

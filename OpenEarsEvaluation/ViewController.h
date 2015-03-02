@@ -32,14 +32,6 @@
     BOOL startupFailedDueToLackOfPermissions;
     
     // --------------------------------------------------------------------------------------------------------
-    // Strings which aren't required for OpenEars but which will help us show off the dynamic language features in this sample app.
-    NSString *pathToFirstDynamicallyGeneratedLanguageModel;
-    NSString *pathToFirstDynamicallyGeneratedDictionary;
-    
-    NSString *pathToSecondDynamicallyGeneratedLanguageModel;
-    NSString *pathToSecondDynamicallyGeneratedDictionary;
-    
-    // --------------------------------------------------------------------------------------------------------
     // Our NSTimer that will help us read and display the input and output levels without locking the UI
     NSTimer *uiUpdateTimer; // For Updating some UI
     
@@ -63,10 +55,6 @@
 // --------------------------------------------------------------------------------------------------------
 @property (nonatomic, strong) NSString * pathToGrammarToStartAppWith; // We'll set our new .languagemodel file to be the one to get switched to when the words "CHANGE MODEL" are recognized.
 @property (nonatomic, strong) NSString * pathToDictionaryToStartAppWith; // We'll set our new dictionary to be the one to get switched to when the words "CHANGE MODEL" are recognized.
-@property (nonatomic, copy) NSString *pathToFirstDynamicallyGeneratedLanguageModel;
-@property (nonatomic, copy) NSString *pathToFirstDynamicallyGeneratedDictionary;
-@property (nonatomic, copy) NSString *pathToSecondDynamicallyGeneratedLanguageModel;
-@property (nonatomic, copy) NSString *pathToSecondDynamicallyGeneratedDictionary;
 
 @property (nonatomic, assign) BOOL usingStartLanguageModel;
 @property (nonatomic, assign) int restartAttemptsDueToPermissionRequests;
