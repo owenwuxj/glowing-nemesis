@@ -25,7 +25,8 @@
 
 @interface ViewController () <ZipArchiveDelegate>
 {
-    
+    // output array to write to countList
+    NSMutableArray *resultArray;
     
     // input sentence from TP XML to feed into PocketSphinx
     NSMutableString *aSentence;
@@ -336,7 +337,7 @@
         //
         NSString *temp = [attributeDict objectForKey:@"display_trans"];
         NSArray *cleanWordArray = [[TPWordNormalizer manager] returnArrayByProcessWordString:temp];
-        NSLog(@"222 %@", [cleanWordArray firstObject]);
+//        NSLog(@"222 %@", [cleanWordArray firstObject]);
         
         // '1376' will be 'one three seven six'
         for (NSString *oneNumber in cleanWordArray) {
@@ -433,7 +434,7 @@
     
     NSDictionary * xmlDictionaryFromOE = [[XMLDictionaryParser sharedInstance] dictionaryWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
     NSDictionary * xmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:resultXmlString];
-    NSLog(@"\n%@\n=========\n=========%@\n=========",xmlDictionaryFromOE[@"Sentence"][@"Word"], xmlDictionaryFromQT[@"Sentence"][@"Word"]);
+    NSLog(@"CompareResult:\n=========\n%@\n=========\n%@\n=========",xmlDictionaryFromOE[@"Sentence"][@"Word"], xmlDictionaryFromQT[@"Sentence"][@"Word"]);
     
     NSString *libDir = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString *priAppDir = [libDir stringByAppendingPathComponent: @"Private Documents"];
@@ -444,10 +445,15 @@
             NSLog(@"FAILED TO CREATE %@",priAppDir);
         }
     }
+
+    if (!resultArray) {
+        resultArray = [NSMutableArray arrayWithObjects:[NSNumber numberWithUnsignedInt:[xmlDictionaryFromOE[@"Sentence"][@"Word"] count]], [NSNumber numberWithUnsignedInt:[xmlDictionaryFromQT[@"Sentence"][@"Word"] count]], nil];
+    } else {
+        [resultArray addObjectsFromArray:[NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:[xmlDictionaryFromOE[@"Sentence"][@"Word"] count]], [NSNumber numberWithUnsignedInt:[xmlDictionaryFromQT[@"Sentence"][@"Word"] count]], nil]];
+    }
     
     if (xmlDictionaryFromOE) {
-        NSArray *array = [NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:[xmlDictionaryFromOE[@"Sentence"][@"Word"] count]], [NSNumber numberWithUnsignedInt:[xmlDictionaryFromQT[@"Sentence"][@"Word"] count]], nil];
-        [array writeToFile:[priAppDir stringByAppendingPathComponent:@"countList"]  atomically:YES];
+        [resultArray writeToFile:[priAppDir stringByAppendingPathComponent:@"countList"]  atomically:YES];
     }
     
     
