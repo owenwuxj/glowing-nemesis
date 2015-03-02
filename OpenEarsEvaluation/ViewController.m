@@ -25,8 +25,7 @@
 
 @interface ViewController () <ZipArchiveDelegate>
 {
-    // old place to keep audio file locally
-    NSString *wavFilePath;
+    
     
     // input sentence from TP XML to feed into PocketSphinx
     NSMutableString *aSentence;
@@ -38,8 +37,10 @@
 @property (nonatomic, strong) NSMutableDictionary *preGrammarDict;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
+@property (nonatomic, strong) NSString *wavFilePath;
 
-@property (nonatomic, strong) dispatch_queue_t concurrentPhotoQueue;
+@property (nonatomic, strong) dispatch_semaphore_t sema;
+@property (nonatomic, strong) dispatch_queue_t queue;
 
 @end
 
@@ -71,6 +72,7 @@
         pocketsphinxController = [[PocketsphinxController alloc] init];
         //pocketsphinxController.verbosePocketSphinx = TRUE; // Uncomment me for verbose debug output
         //pocketsphinxController.outputAudio = TRUE;
+        pocketsphinxController.returnNullHypotheses = YES;
 #ifdef kGetNbest
         pocketsphinxController.returnNbest = TRUE;
         pocketsphinxController.nBestNumber = 1;
@@ -94,7 +96,9 @@
     self.pocketsphinxController.returnNullHypotheses = TRUE;
 //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
     
-    [self.pocketsphinxController runRecognitionOnWavFileAtPath:wavFilePath
+    NSLog(@"startListening, on Thread: %@", [NSThread currentThread]);
+    
+    [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
                                            acousticModelAtPath:[AcousticModel pathToModel:@"AcousticModelEnglish"]
@@ -115,12 +119,13 @@
     [self.openEarsEventsObserver setDelegate:self]; // Make this class the delegate of OpenEarsObserver so we can get all of the messages about what OpenEars is doing.
 
     
-    
+    self.sema = dispatch_semaphore_create(0);
+    self.queue = dispatch_queue_create("com.example.subsystem.taskAsr", NULL);
     
     // Do any additional setup after loading the view, typically from a nib.
 
-    NSArray *docPaths = NSSearchPathForDirectoriesInDomains(NSApplicationDirectory, NSUserDomainMask, YES);
-    NSString *documentPaths = [docPaths objectAtIndex:0];
+//    NSArray *docPaths = NSSearchPathForDirectoriesInDomains(NSApplicationDirectory, NSUserDomainMask, YES);
+//    NSString *documentPaths = [docPaths objectAtIndex:0];
 
 //    NSString *recoursePaths = [[NSBundle mainBundle] resourcePath];
 //    [self openEachFileAt:recoursePaths];
@@ -145,13 +150,13 @@
         [self openEachFileAt:directory];
     }
     
-    
 }
 - (IBAction)onStartButtonTapped:(id)sender {
         [self downloadFile];
 }
 
 - (void)openEachFileAt:(NSString *)path {
+    
     NSString *file;
     NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager] enumeratorAtPath:path];
     while (file = [enumerator nextObject]) {
@@ -162,10 +167,12 @@
         if (!isDirectory) {
             NSLog(@"file:%@", file);
             
-            dispatch_sync(self.concurrentPhotoQueue, ^{
+
+            dispatch_async(self.queue, ^{
                 [self evaluateFiles:file];
             });
             
+            dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
 
 
         }
@@ -176,13 +183,16 @@
 }
 
 - (void)evaluateFiles:(NSString *)file {
+    
+    NSLog(@"evaluateFiles, on Thread: %@", [NSThread currentThread]);
+    
     if ([[file substringFromIndex:[file length] - 7] isEqualToString:@"context"]) {
         
         NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
         NSString *directory = documentsDirectoryURL.path;
         
         fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
-        wavFilePath = [NSString stringWithString:fileNameString];
+        self.wavFilePath = [NSString stringWithString:fileNameString];
         
         NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
         
@@ -198,6 +208,8 @@
         } else {
             //        NSLog(@"%@",xmlData);
         }
+    } else {
+        dispatch_semaphore_signal(self.sema);
     }
 }
 
@@ -308,6 +320,8 @@
         [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:nil];
         return;
     }
+    
+    dispatch_semaphore_signal(self.sema);
 }
 
 #ifdef kGetNbest
@@ -320,6 +334,8 @@
     }
     
     [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:oneHypothesis waitUntilDone:NO];
+    
+    dispatch_semaphore_signal(self.sema);
 }
 #endif
 
@@ -402,6 +418,9 @@
     if ([error code] != noErr) {
         NSLog(@"error: %@",[error description]);
     } else {
+        
+        NSLog(@"parserDidEndDocument, on Thread: %@", [NSThread currentThread]);
+        
         grammarLangGenDict = [error userInfo];
         
         NSString *lmPath = [grammarLangGenDict objectForKey:@"LMPath"];
@@ -467,6 +486,8 @@
         NSArray *array = [NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:[xmlDictionaryFromOE[@"Sentence"][@"Word"] count]], [NSNumber numberWithUnsignedInt:[xmlDictionaryFromQT[@"Sentence"][@"Word"] count]], nil];
         [array writeToFile:[priAppDir stringByAppendingPathComponent:@"countList"]  atomically:YES];
     }
+    
+    
 }
 
 /*
