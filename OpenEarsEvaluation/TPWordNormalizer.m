@@ -26,9 +26,9 @@ static TPWordNormalizer *sharedInstance;
 /*
  Step 1(a): If "'" doesn't appear in the middle(of the word), then delete it
  */
-- (NSString *)dealWithSingleNotation:(NSString*)aWord {
+- (NSString *)dealWord:(NSString*)aWord withSingleNotation:(NSString *)aNotation{
     NSMutableString *outputString;
-    NSArray *shouldBeArrays = [aWord componentsSeparatedByString:@"'"];
+    NSArray *shouldBeArrays = [aWord componentsSeparatedByString:aNotation];
     
     // Only handle one single notation in the word
     if ([shouldBeArrays count] == 2) {
@@ -47,7 +47,7 @@ static TPWordNormalizer *sharedInstance;
         outputString = (NSMutableString *)shouldBeArrays[1];
     } else {
         // 1 means no notation in the word AND >= 4 means crazy!
-        // So, 1 or 4 or more are all cutted as last obj
+        // So, 1 or 4 or more are all cutted to use the last obj
         outputString = (NSMutableString *)[shouldBeArrays lastObject];
     }
     
@@ -188,9 +188,10 @@ static TPWordNormalizer *sharedInstance;
     
     
     /*
-     Step 1(a): If "'" doesn't appear in the middle(of the word), then delete it/them
+     Step 1(a): If "'"/"." doesn't appear in the middle(of the word), then delete it/them
      */
-    NSString *outputString = [self dealWithSingleNotation:inputString];
+    NSString *outputString0 = [self dealWord:inputString withSingleNotation:@"'"];
+    NSString *outputString = [self dealWord:outputString0 withSingleNotation:@"."];
     NSMutableArray *processedTxtArray = [NSMutableArray arrayWithObject:outputString];
     
     /*
@@ -242,12 +243,12 @@ static TPWordNormalizer *sharedInstance;
             return processedArrayTH;
         }
         
-        NSUInteger output2Length = [cleanWordString length];
+        NSUInteger output2Length = [outputString length];
         
         // case 3: If there are only two continuous numbers in the string, replace them with one word
         if (output2Length <= 2) {
             // Not Ordinal
-            return [self spellOutOneOrTwoDigitsNumberArray:[NSArray arrayWithObject:cleanWordString] isOrdinal:NO];
+            return [self spellOutOneOrTwoDigitsNumberArray:[NSArray arrayWithObject:outputString] isOrdinal:NO];
             
         }
         
@@ -256,9 +257,9 @@ static TPWordNormalizer *sharedInstance;
         
         // Done Case!
         if (output2Length > 2) {// replace 1 by one
-            for (int idx = 0; idx < [cleanWordString length]; idx++) {
+            for (int idx = 0; idx < [outputString length]; idx++) {
                 //convert to words
-                NSString *temp = [NSString stringWithFormat:@"%c", [cleanWordString characterAtIndex:idx]];
+                NSString *temp = [NSString stringWithFormat:@"%c", [outputString characterAtIndex:idx]];
                 NSNumber *numberValue = [NSNumber numberWithInt:[temp intValue]]; //needs to be NSNumber!
                 NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
                 numberFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];

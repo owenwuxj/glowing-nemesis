@@ -179,7 +179,7 @@
         NSString *directory = documentsDirectoryURL.path;
         
         fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
-        self.wavFilePath = [NSString stringWithString:fileNameString];
+//        self.wavFilePath = [NSString stringWithString:fileNameString];
         
         NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
         
@@ -336,7 +336,7 @@
         //
         NSString *temp = [attributeDict objectForKey:@"display_trans"];
         NSArray *cleanWordArray = [[TPWordNormalizer manager] returnArrayByProcessWordString:temp];
-        NSLog(@"222 %lu", (unsigned long)[cleanWordArray count]);
+        NSLog(@"222 %@", [cleanWordArray firstObject]);
         
         // '1376' will be 'one three seven six'
         for (NSString *oneNumber in cleanWordArray) {

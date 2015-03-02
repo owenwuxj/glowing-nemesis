@@ -40,10 +40,6 @@
 // --------------------------------------------------------------------------------------------------------
 @property (nonatomic, strong) NSString * pathToGrammarToStartAppWith; // We'll set our new .languagemodel file to be the one to get switched to when the words "CHANGE MODEL" are recognized.
 @property (nonatomic, strong) NSString * pathToDictionaryToStartAppWith; // We'll set our new dictionary to be the one to get switched to when the words "CHANGE MODEL" are recognized.
-@property (nonatomic, copy) NSString *pathToFirstDynamicallyGeneratedLanguageModel;
-@property (nonatomic, copy) NSString *pathToFirstDynamicallyGeneratedDictionary;
-@property (nonatomic, copy) NSString *pathToSecondDynamicallyGeneratedLanguageModel;
-@property (nonatomic, copy) NSString *pathToSecondDynamicallyGeneratedDictionary;
 
 @property (nonatomic, assign) BOOL usingStartLanguageModel;
 @property (nonatomic, assign) int restartAttemptsDueToPermissionRequests;
