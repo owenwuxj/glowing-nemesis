@@ -431,7 +431,7 @@
     NSString *qtSentScoreString = xmlDictionaryFromQT[@"Sentence"][@"_score"];// ignore unrecognized scores from qt
     NSString *qtSentScore;
     if ([qtSentScoreString doubleValue] < 70.0000000) {
-        qtSentScore = @"(null)";
+        qtSentScore = qtSentScoreString;
         isQtPassed = NO;
     } else {
         qtSentScore = qtSentScoreString;
@@ -440,15 +440,16 @@
     
     NSString *oeSentScore;// ignore unrecognized scores from qt
     if ([xmlDictionaryFromOE[@"Sentence"][@"_score"] floatValue] > 70.0) {
-        oeSentScore = @" 71.00";
+        oeSentScore = @"PASSED ";
         isOEPassed = YES;
     } else {
+        oeSentScore = @"NOTPASS";
         isOEPassed = NO;
     }
 
     NSString *resultNodeString;
     if (isOEPassed != isQtPassed) {
-        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ XXX",oeSentScore, qtSentScore];
+        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ DIFF:%@ Pass",oeSentScore, qtSentScore, isQtPassed?@"QT":@"OE"];
     } else {
         resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@",oeSentScore, qtSentScore];
     }
