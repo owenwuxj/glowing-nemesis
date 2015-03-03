@@ -287,7 +287,7 @@
     
     NSString *oneHypothesis = [[hypothesisArray firstObject] objectForKey:@"Hypothesis"];
     if ([oneHypothesis isEqualToString:@""]) {
-        NSLog(@"hypothesisArray is Empty");
+//        NSLog(@"hypothesisArray is Empty");
     }else {//if ([testValue length] > 1)
 //        NSLog(@"hypothesisArray is %@",oneHypothesis);
     }
@@ -426,20 +426,32 @@
             NSLog(@"FAILED TO CREATE %@",priAppDir);
         }
     }
-
-    NSLog(@"%@ ------COMPARE RESULT------ %@",xmlDictionaryFromOE[@"Sentence"][@"_score"], xmlDictionaryFromQT[@"Sentence"][@"_score"]);
     
+    BOOL isQtPassed, isOEPassed;
     NSString *qtSentScoreString = xmlDictionaryFromQT[@"Sentence"][@"_score"];// ignore unrecognized scores from qt
-//    if ([qtSentScoreString floatValue] < 70.0) {
-//        qtSentScore = @"(null)";
-//    }
+    NSString *qtSentScore;
+    if ([qtSentScoreString doubleValue] < 70.0000000) {
+        qtSentScore = @"(null)";
+        isQtPassed = NO;
+    } else {
+        qtSentScore = qtSentScoreString;
+        isQtPassed = YES;
+    }
     
     NSString *oeSentScore;// ignore unrecognized scores from qt
     if ([xmlDictionaryFromOE[@"Sentence"][@"_score"] floatValue] > 70.0) {
-        oeSentScore = @"71.00";
+        oeSentScore = @" 71.00";
+        isOEPassed = YES;
+    } else {
+        isOEPassed = NO;
     }
 
-    NSString *resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@",oeSentScore, qtSentScoreString];
+    NSString *resultNodeString;
+    if (isOEPassed != isQtPassed) {
+        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ XXX",oeSentScore, qtSentScore];
+    } else {
+        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@",oeSentScore, qtSentScore];
+    }
     
     if (!resultArray) {
         resultArray = [NSMutableArray arrayWithObject:resultNodeString];

@@ -192,6 +192,7 @@ static TPWordNormalizer *sharedInstance;
      */
     NSString *outputString0 = [self dealWord:inputString withSingleNotation:@"'"];
     NSString *outputString = [self dealWord:outputString0 withSingleNotation:@"."];
+    //  display_trans="$100,000"  !!! need fixes
     NSMutableArray *processedTxtArray = [NSMutableArray arrayWithObject:outputString];
     
     /*
