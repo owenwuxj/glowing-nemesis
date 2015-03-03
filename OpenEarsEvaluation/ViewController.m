@@ -15,10 +15,9 @@
 #import <OpenEars/OpenEarsLogging.h>
 #import <OpenEars/AcousticModel.h>
 
-
-
 #import "TPWordNormalizer.h"
 #import "XMLDictionary.h"
+
 
 #define kFileDownloaded @"ZipFileDownloaded"
 #define kFileUnzipped @"FileUnzipped"
@@ -53,7 +52,7 @@
 @implementation ViewController
 
 #define kPassPercentage 59.0
-#define kLevelUpdatesPerSecond 18 // We'll have the ui update 18 times a second to show some fluidity without hitting the CPU too hard.
+
 #define kGetNbest // Uncomment this if you want to try out nbest
 
 #pragma mark -
@@ -146,7 +145,6 @@
             // it failed.
         }
     }
-    
 }
 
 
@@ -271,17 +269,6 @@
 #pragma mark -
 #pragma mark OpenEarsEventsObserver delegate methods
 
-// What follows are all of the delegate methods you can optionally use once you've instantiated an OpenEarsEventsObserver and set its delegate to self.
-// I've provided some pretty granular information about the exact phase of the Pocketsphinx listening loop, the Audio Session, and Flite, but I'd expect
-// that the ones that will really be needed by most projects are the following:
-//
-// ...
-//
-// It isn't necessary to have a PocketsphinxController or a FliteController instantiated in order to use these methods.  If there isn't anything instantiated that will
-// send messages to an OpenEarsEventsObserver, all that will happen is that these methods will never fire.  You also do not have to create a OpenEarsEventsObserver in
-// the same class or view controller in which you are doing things with a PocketsphinxController or FliteController; you can receive updates from those objects in
-// any class in which you instantiate an OpenEarsEventsObserver and set its delegate to self.
-
 // An optional delegate method of OpenEarsEventsObserver which delivers the text of speech that Pocketsphinx heard and analyzed, along with its accuracy score and utterance ID.
 - (void) pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
     
@@ -319,18 +306,6 @@
 
 #pragma mark - NSXMLParseDelegate is for parsing TPContext XML ONLY!
 
-//    <Sentences>
-//        <Sentence id="1" AVG="61.280520215518" DEV="14.611454304811" display_trans="It's 9032 1562." trans="XPJCX XEKFY JWLZR ">
-//            <Word id="1" trans="XPJCX" display_trans="IT'S" weight="1"/>
-//            <Word id="2" trans="XEKFY" display_trans="9032" weight="1"/>
-//            <Word id="3" trans="JWLZR" display_trans="1562" weight="1"/>
-//        </Sentence>
-//        <Sentence id="2" trans="YHXAJ OSEYO" display_trans="A phobia?">
-//            <Word id="1" trans="YHXAJ" display_trans="A" weight="1" />
-//            <Word id="2" trans="OSEYO" display_trans="PHOBIA" weight="1" />
-//        </Sentence>
-//    </Sentences>
-
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict{
     
     // Parsing context/input xml files
@@ -341,8 +316,8 @@
         if (sentenceId) {
             /*
              preGrammarDict = ["I CHECK MY NEWS",@"1";
-             "YES",@"2";
-             ...];
+                                           "YES",@"2";
+                             ...];
              */
             [self.preGrammarDict setValue:aSentence forKey:sentenceId];
         }
@@ -453,7 +428,18 @@
     }
 
     NSLog(@"%@ ------COMPARE RESULT------ %@",xmlDictionaryFromOE[@"Sentence"][@"_score"], xmlDictionaryFromQT[@"Sentence"][@"_score"]);
-    NSString *resultNodeString = [NSString stringWithFormat:@"%@ ------COMPARE RESULT------ %@",xmlDictionaryFromOE[@"Sentence"][@"_score"], xmlDictionaryFromQT[@"Sentence"][@"_score"]];
+    
+    NSString *qtSentScoreString = xmlDictionaryFromQT[@"Sentence"][@"_score"];// ignore unrecognized scores from qt
+//    if ([qtSentScoreString floatValue] < 70.0) {
+//        qtSentScore = @"(null)";
+//    }
+    
+    NSString *oeSentScore;// ignore unrecognized scores from qt
+    if ([xmlDictionaryFromOE[@"Sentence"][@"_score"] floatValue] > 70.0) {
+        oeSentScore = @"71.00";
+    }
+
+    NSString *resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@",oeSentScore, qtSentScoreString];
     
     if (!resultArray) {
         resultArray = [NSMutableArray arrayWithObject:resultNodeString];
@@ -494,15 +480,6 @@
         int errCode = 8;
         [theResult appendFormat:@"<TPResult version=\"1.0\" error=\"%d\"></TPResult>",errCode];
     } else {
-        //        <TPResult version="1.0">
-        //            <Sentence id="2" trans="KVRHL IMPLK JXXJD NIGFJ " AVG="60.000000" DEV="0.000000" score="62.511116">
-        //                <Word id="1" trans="KVRHL" score="52.864811"></Word>
-        //                <Word id="2" trans="IMPLK" score="76.350952"></Word>
-        //                <Word id="3" trans="JXXJD" score="55.162804"></Word>
-        //                <Word id="4" trans="NIGFJ" score="68.580650"></Word>
-        //            </Sentence>
-        //        </TPResult>
-        
         [theResult appendFormat:@"<TPResult version=\"1.0\"><Sentence id=\"%@\" score=\"71\">",correctSentID];
         
         // For loop to generate the <Word></Word>
