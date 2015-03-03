@@ -431,10 +431,10 @@
     NSString *qtSentScoreString = xmlDictionaryFromQT[@"Sentence"][@"_score"];// ignore unrecognized scores from qt
     NSString *qtSentScore;
     if ([qtSentScoreString doubleValue] < 70.0000000) {
-        qtSentScore = qtSentScoreString;
+        qtSentScore = [NSString stringWithFormat:@"NO :%@", qtSentScoreString];
         isQtPassed = NO;
     } else {
-        qtSentScore = qtSentScoreString;
+        qtSentScore = [NSString stringWithFormat:@"YES:%@", qtSentScoreString];
         isQtPassed = YES;
     }
     
