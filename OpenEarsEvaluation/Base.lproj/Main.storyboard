@@ -50,6 +50,18 @@
                                     <action selector="onStartButtonTapped:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="uKy-LM-U4k"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Counting:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VNE-bh-Uhp">
+                                <rect key="frame" x="18" y="249" width="75" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fCM-Kl-CP3">
+                                <rect key="frame" x="108" y="249" width="476" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
@@ -59,6 +71,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="countingLabel" destination="fCM-Kl-CP3" id="SL5-NX-Pak"/>
                         <outlet property="progressView" destination="l3E-GP-x83" id="H8b-1w-wVP"/>
                         <outlet property="statusLabel" destination="M9h-rO-KID" id="afx-Fm-5Oz"/>
                     </connections>

@@ -44,6 +44,10 @@
 @property (nonatomic, strong) dispatch_semaphore_t sema;
 @property (nonatomic, strong) dispatch_queue_t queue;
 
+@property (weak, nonatomic) IBOutlet UILabel *countingLabel;
+@property (nonatomic, assign) NSUInteger countNum;
+
+
 @end
 
 @implementation ViewController
@@ -96,6 +100,8 @@
     
     self.sema = dispatch_semaphore_create(0);
     self.queue = dispatch_queue_create("com.example.subsystem.taskAsr", NULL);
+    
+    self.countNum = 0;
     
     BOOL isFileDownloaded = [[NSUserDefaults standardUserDefaults] boolForKey:kFileDownloaded];
     BOOL isFileUnzipped = [[NSUserDefaults standardUserDefaults] boolForKey:kFileUnzipped];
@@ -154,14 +160,23 @@
         [[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@", path, file]
                                              isDirectory:&isDirectory];
         if (!isDirectory) {
-            NSLog(@"file:%@", file);
             
             
-            dispatch_async(self.queue, ^{
-                [self evaluateFiles:file];
-            });
-            dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
-            NSLog(@"Test");
+            if ([[file substringFromIndex:[file length] - 7] isEqualToString:@"context"]) {
+                
+                NSLog(@"### Starting: %@ ###", file);
+                
+                dispatch_async(self.queue, ^{
+                    [self evaluateFiles:file];
+                });
+                dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
+                
+                NSLog(@"### Finished: %@ ###", file);
+                
+                
+            }
+
+            
             
         }
         else {
@@ -172,10 +187,6 @@
 
 - (void)evaluateFiles:(NSString *)file {
     
-    NSLog(@"evaluateFiles, on Thread: %@", [NSThread currentThread]);
-    
-    if ([[file substringFromIndex:[file length] - 7] isEqualToString:@"context"]) {
-        
         NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
         NSString *directory = documentsDirectoryURL.path;
         
@@ -196,9 +207,6 @@
         } else {
             //        NSLog(@"%@",xmlData);
         }
-    } else {
-        dispatch_semaphore_signal(self.sema);
-    }
 }
 
 - (void)downloadFile {
@@ -277,18 +285,19 @@
 // An optional delegate method of OpenEarsEventsObserver which delivers the text of speech that Pocketsphinx heard and analyzed, along with its accuracy score and utterance ID.
 - (void) pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
     
-    NSLog(@"The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
+    NSLog(@"### pocketsphinxDidReceiveHypothesis: The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
 
     if (!hypothesis) {
-        [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:nil];
+        [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:YES];
         return;
     }
-    
-    dispatch_semaphore_signal(self.sema);
 }
 
 #ifdef kGetNbest
 - (void) pocketsphinxDidReceiveNBestHypothesisArray:(NSArray *)hypothesisArray { // Pocketsphinx has an n-best hypothesis dictionary.
+    
+    NSLog(@"### pocketsphinxDidReceiveNBestHypothesisArray");
+    
     NSString *oneHypothesis = [[hypothesisArray firstObject] objectForKey:@"Hypothesis"];
     if ([oneHypothesis isEqualToString:@""]) {
         NSLog(@"hypothesisArray is Empty");
@@ -296,9 +305,15 @@
         NSLog(@"hypothesisArray is %@",oneHypothesis);
     }
     
-    [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:oneHypothesis waitUntilDone:NO];
+    [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:oneHypothesis waitUntilDone:YES];
+    
+    self.countNum++;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.countingLabel.text = [NSString stringWithFormat:@"Successful Count: %d", self.countNum];
+    });
     
     dispatch_semaphore_signal(self.sema);
+    
 }
 #endif
 
@@ -355,14 +370,6 @@
     }
     
     NSLog(@"parserDidEndDocument?%@",self.preGrammarDict);
-    
-//    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : @[
-//                                           @"WHAT TIME IS IT",
-//                                           @"HOW ARE YOU",
-//                                           @"WHERE ARE YOU",
-//                                           @"WHERE IS IT",
-//                                           ],
-//                                   };
     
     NSDictionary *grammarDict;
     NSArray *theArray = [self.preGrammarDict allValues];
@@ -434,7 +441,7 @@
     
     NSDictionary * xmlDictionaryFromOE = [[XMLDictionaryParser sharedInstance] dictionaryWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
     NSDictionary * xmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:resultXmlString];
-    NSLog(@"CompareResult:\n=========\n%@\n=========\n%@\n=========",xmlDictionaryFromOE[@"Sentence"][@"Word"], xmlDictionaryFromQT[@"Sentence"][@"Word"]);
+    //NSLog(@"CompareResult:\n=========\n%@\n=========\n%@\n=========",xmlDictionaryFromOE[@"Sentence"][@"Word"], xmlDictionaryFromQT[@"Sentence"][@"Word"]);
     
     NSString *libDir = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString *priAppDir = [libDir stringByAppendingPathComponent: @"Private Documents"];
@@ -456,7 +463,7 @@
         [resultArray writeToFile:[priAppDir stringByAppendingPathComponent:@"countList"]  atomically:YES];
     }
     
-    
+
 }
 
 /*
@@ -567,7 +574,7 @@
     self.pocketsphinxController.returnNullHypotheses = TRUE;
     //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
     
-    NSLog(@"startListening, on Thread: %@", [NSThread currentThread]);
+    NSLog(@"startListening");
     
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
