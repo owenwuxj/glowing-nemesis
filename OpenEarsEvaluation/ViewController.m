@@ -285,7 +285,7 @@
 // An optional delegate method of OpenEarsEventsObserver which delivers the text of speech that Pocketsphinx heard and analyzed, along with its accuracy score and utterance ID.
 - (void) pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
     
-    NSLog(@"### pocketsphinxDidReceiveHypothesis: The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
+//    NSLog(@"### pocketsphinxDidReceiveHypothesis: The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
 
     if (!hypothesis) {
         [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:YES];
@@ -296,20 +296,20 @@
 #ifdef kGetNbest
 - (void) pocketsphinxDidReceiveNBestHypothesisArray:(NSArray *)hypothesisArray { // Pocketsphinx has an n-best hypothesis dictionary.
     
-    NSLog(@"### pocketsphinxDidReceiveNBestHypothesisArray");
+//    NSLog(@"### pocketsphinxDidReceiveNBestHypothesisArray");
     
     NSString *oneHypothesis = [[hypothesisArray firstObject] objectForKey:@"Hypothesis"];
     if ([oneHypothesis isEqualToString:@""]) {
         NSLog(@"hypothesisArray is Empty");
     }else {//if ([testValue length] > 1)
-        NSLog(@"hypothesisArray is %@",oneHypothesis);
+//        NSLog(@"hypothesisArray is %@",oneHypothesis);
     }
     
     [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:oneHypothesis waitUntilDone:YES];
     
     self.countNum++;
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.countingLabel.text = [NSString stringWithFormat:@"Successful Count: %d", self.countNum];
+        self.countingLabel.text = [NSString stringWithFormat:@"Successful Count: %ld", self.countNum];
     });
     
     dispatch_semaphore_signal(self.sema);
@@ -369,7 +369,7 @@
         [self.preGrammarDict setObject:[temp substringToIndex:[temp length]-1] forKey:aKey];
     }
     
-    NSLog(@"parserDidEndDocument?%@",self.preGrammarDict);
+//    NSLog(@"parserDidEndDocument?%@",self.preGrammarDict);
     
     NSDictionary *grammarDict;
     NSArray *theArray = [self.preGrammarDict allValues];
@@ -389,7 +389,7 @@
         NSLog(@"error: %@",[error description]);
     } else {
         
-        NSLog(@"parserDidEndDocument, on Thread: %@", [NSThread currentThread]);
+//        NSLog(@"parserDidEndDocument, on Thread: %@", [NSThread currentThread]);
         
         grammarLangGenDict = [error userInfo];
         
@@ -441,7 +441,6 @@
     
     NSDictionary * xmlDictionaryFromOE = [[XMLDictionaryParser sharedInstance] dictionaryWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
     NSDictionary * xmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:resultXmlString];
-    //NSLog(@"CompareResult:\n=========\n%@\n=========\n%@\n=========",xmlDictionaryFromOE[@"Sentence"][@"Word"], xmlDictionaryFromQT[@"Sentence"][@"Word"]);
     
     NSString *libDir = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString *priAppDir = [libDir stringByAppendingPathComponent: @"Private Documents"];
@@ -453,17 +452,18 @@
         }
     }
 
+    NSLog(@"%@ ------COMPARE RESULT------ %@",xmlDictionaryFromOE[@"Sentence"][@"_score"], xmlDictionaryFromQT[@"Sentence"][@"_score"]);
+    NSString *resultNodeString = [NSString stringWithFormat:@"%@ ------COMPARE RESULT------ %@",xmlDictionaryFromOE[@"Sentence"][@"_score"], xmlDictionaryFromQT[@"Sentence"][@"_score"]];
+    
     if (!resultArray) {
-        resultArray = [NSMutableArray arrayWithObjects:[NSNumber numberWithUnsignedInt:[xmlDictionaryFromOE[@"Sentence"][@"Word"] count]], [NSNumber numberWithUnsignedInt:[xmlDictionaryFromQT[@"Sentence"][@"Word"] count]], nil];
+        resultArray = [NSMutableArray arrayWithObject:resultNodeString];
     } else {
-        [resultArray addObjectsFromArray:[NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:[xmlDictionaryFromOE[@"Sentence"][@"Word"] count]], [NSNumber numberWithUnsignedInt:[xmlDictionaryFromQT[@"Sentence"][@"Word"] count]], nil]];
+        [resultArray addObject:resultNodeString];
     }
     
-    if (xmlDictionaryFromOE) {
+    if (resultArray) {
         [resultArray writeToFile:[priAppDir stringByAppendingPathComponent:@"countList"]  atomically:YES];
     }
-    
-
 }
 
 /*
@@ -561,7 +561,8 @@
     
 
     // TODO: Compare theResult with *****.result from Qitai
-    NSData *xmlData = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:fileNameString withExtension:@"result"]];
+    NSString *resultXmlFileName = [NSString stringWithFormat:@"%@.result",[fileNameString substringToIndex:[fileNameString length]-8]];
+    NSData *xmlData = [NSData dataWithContentsOfFile:resultXmlFileName];
     NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
     
     [self compareOpenEarsOutputString:theResult andQitaiXMLString:xmlString];
@@ -574,7 +575,7 @@
     self.pocketsphinxController.returnNullHypotheses = TRUE;
     //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
     
-    NSLog(@"startListening");
+//    NSLog(@"startListening");
     
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith

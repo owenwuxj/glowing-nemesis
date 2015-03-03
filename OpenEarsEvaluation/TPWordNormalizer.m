@@ -42,13 +42,13 @@ static TPWordNormalizer *sharedInstance;
             // appear in the end
             outputString = (NSMutableString *)[shouldBeArrays firstObject];
         }
-    } else if ([shouldBeArrays count] == 3) {// handle 'word'
+    } else if ([shouldBeArrays count] == 3) {// handle "'word'"
         // so get the middle
         outputString = (NSMutableString *)shouldBeArrays[1];
     } else {
         // 1 means no notation in the word AND >= 4 means crazy!
         // So, 1 or 4 or more are all cutted to use the last obj
-        outputString = (NSMutableString *)[shouldBeArrays lastObject];
+        outputString = (NSMutableString *)[shouldBeArrays firstObject]; // word like "about..."
     }
     
     return outputString;
