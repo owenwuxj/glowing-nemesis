@@ -191,7 +191,8 @@ static TPWordNormalizer *sharedInstance;
      Step 1(a): If "'"/"." doesn't appear in the middle(of the word), then delete it/them
      */
     NSString *outputString0 = [self dealWord:inputString withSingleNotation:@"'"];
-    NSString *outputString = [self dealWord:outputString0 withSingleNotation:@"."];
+    NSString *outputString1 = [self dealWord:outputString0 withSingleNotation:@"$"];
+    NSString *outputString = [self dealWord:outputString1 withSingleNotation:@"."];
     //  display_trans="$100,000"  !!! need fixes
     NSMutableArray *processedTxtArray = [NSMutableArray arrayWithObject:outputString];
     
