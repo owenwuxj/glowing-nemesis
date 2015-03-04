@@ -10,11 +10,11 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-@class PocketsphinxController;
+@class OEPocketsphinxController;
 
-#import <OpenEars/OpenEarsEventsObserver.h> // We need to import this here in order to use the delegate.
+#import <OpenEars/OEEventsObserver.h> // We need to import this here in order to use the delegate.
 
-@interface ViewController : UIViewController <OpenEarsEventsObserverDelegate, NSXMLParserDelegate> {
+@interface ViewController : UIViewController <OEEventsObserverDelegate, NSXMLParserDelegate> {
     
     // --------------------------------------------------------------------------------------------------------
     // Our NSTimer that will help us read and display the input and output levels without locking the UI
@@ -33,8 +33,8 @@
 // --------------------------------------------------------------------------------------------------------
 // These three are the important OpenEars objects that this class demonstrates the use of.
 // --------------------------------------------------------------------------------------------------------
-@property (nonatomic, strong) OpenEarsEventsObserver *openEarsEventsObserver;
-@property (nonatomic, strong) PocketsphinxController *pocketsphinxController;
+@property (nonatomic, strong) OEEventsObserver *openEarsEventsObserver;
+@property (nonatomic, strong) OEPocketsphinxController *pocketsphinxController;
 
 // Things which help us show off the dynamic language features.
 // --------------------------------------------------------------------------------------------------------

@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		13D27AD21AA1A07300F3C937 /* AcousticModelEnglish.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 13D27ACE1AA1A07300F3C937 /* AcousticModelEnglish.bundle */; };
-		13D27AD41AA1A07300F3C937 /* OpenEars.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13D27AD01AA1A07300F3C937 /* OpenEars.framework */; };
+		13980AE61AA6B404009184DF /* AcousticModelEnglish.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 13980AE41AA6B404009184DF /* AcousticModelEnglish.bundle */; };
+		13980AE71AA6B404009184DF /* OpenEars.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13980AE51AA6B404009184DF /* OpenEars.framework */; };
 		13D27AD81AA1A10C00F3C937 /* TPWordNormalizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 13D27AD71AA1A10C00F3C937 /* TPWordNormalizer.m */; };
 		13D27ADC1AA1A12600F3C937 /* XMLDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 13D27ADB1AA1A12600F3C937 /* XMLDictionary.m */; };
 		A49F5E42D869690DCFEE51F3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7EC25B6599F5167D369AD8 /* libPods.a */; };
@@ -32,8 +32,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		13D27ACE1AA1A07300F3C937 /* AcousticModelEnglish.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = AcousticModelEnglish.bundle; sourceTree = "<group>"; };
-		13D27AD01AA1A07300F3C937 /* OpenEars.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEars.framework; sourceTree = "<group>"; };
+		13980AE41AA6B404009184DF /* AcousticModelEnglish.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = AcousticModelEnglish.bundle; sourceTree = "<group>"; };
+		13980AE51AA6B404009184DF /* OpenEars.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEars.framework; sourceTree = "<group>"; };
 		13D27AD61AA1A10C00F3C937 /* TPWordNormalizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TPWordNormalizer.h; sourceTree = "<group>"; };
 		13D27AD71AA1A10C00F3C937 /* TPWordNormalizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TPWordNormalizer.m; sourceTree = "<group>"; };
 		13D27ADA1AA1A12600F3C937 /* XMLDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLDictionary.h; sourceTree = "<group>"; };
@@ -62,7 +62,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A49F5E42D869690DCFEE51F3 /* libPods.a in Frameworks */,
-				13D27AD41AA1A07300F3C937 /* OpenEars.framework in Frameworks */,
+				13980AE71AA6B404009184DF /* OpenEars.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,8 +79,8 @@
 		13D27ACD1AA1A07300F3C937 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
-				13D27ACE1AA1A07300F3C937 /* AcousticModelEnglish.bundle */,
-				13D27AD01AA1A07300F3C937 /* OpenEars.framework */,
+				13980AE41AA6B404009184DF /* AcousticModelEnglish.bundle */,
+				13980AE51AA6B404009184DF /* OpenEars.framework */,
 			);
 			path = Framework;
 			sourceTree = "<group>";
@@ -259,7 +259,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF45A9F91A9F142A00C6629C /* Main.storyboard in Resources */,
-				13D27AD21AA1A07300F3C937 /* AcousticModelEnglish.bundle in Resources */,
+				13980AE61AA6B404009184DF /* AcousticModelEnglish.bundle in Resources */,
 				BF45A9FE1A9F142A00C6629C /* LaunchScreen.xib in Resources */,
 				BF45A9FB1A9F142A00C6629C /* Images.xcassets in Resources */,
 			);
@@ -442,6 +442,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Framework",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = OpenEarsEvaluation/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -458,6 +459,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Framework",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = OpenEarsEvaluation/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;

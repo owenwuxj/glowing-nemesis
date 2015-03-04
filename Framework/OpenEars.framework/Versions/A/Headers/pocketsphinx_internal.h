@@ -45,11 +45,12 @@
 #define __POCKETSPHINX_INTERNAL_H__
 
 /* SphinxBase headers. */
-#include "cmd_ln.h"
-#include "logmath.h"
-#include "fe.h"
-#include "feat.h"
-#include "profile.h"
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/fe.h>
+#include <sphinxbase/feat.h>
+#include <sphinxbase/hash_table.h>
+#include <sphinxbase/logmath.h>
+#include <sphinxbase/profile.h>
 
 /* Local headers. */
 #include "pocketsphinx.h"
@@ -61,6 +62,11 @@
  * Search algorithm structure.
  */
 typedef struct ps_search_s ps_search_t;
+
+#define PS_DEFAULT_SEARCH  "default"
+#define PS_SEARCH_KWS    "kws"
+#define PS_SEARCH_FSG    "fsg"
+#define PS_SEARCH_NGRAM  "ngram"
 
 /**
  * V-table for search algorithm.
@@ -85,6 +91,7 @@ typedef struct ps_searchfuncs_s {
  */
 struct ps_search_s {
     ps_searchfuncs_t *vt;  /**< V-table of search methods. */
+
     ps_search_t *pls;      /**< Phoneme loop for lookahead. */
     cmd_ln_t *config;      /**< Configuration. */
     acmod_t *acmod;        /**< Acoustic model. */
@@ -191,7 +198,7 @@ struct ps_decoder_s {
     logmath_t *lmath;  /**< Log math computation. */
 
     /* Search modules. */
-    glist_t searches;        /**< List of search modules. */
+    hash_table_t *searches;        /**< Set of search modules. */
     /* TODO: Convert this to a stack of searches each with their own
      * lookahead value. */
     ps_search_t *search;     /**< Currently active search module. */
@@ -206,6 +213,11 @@ struct ps_decoder_s {
     char const *mfclogdir; /**< Log directory for MFCC files. */
     char const *rawlogdir; /**< Log directory for audio files. */
     char const *senlogdir; /**< Log directory for senone score files. */
+};
+
+
+struct ps_search_iter_s {
+    hash_iter_t itor;
 };
 
 #endif /* __POCKETSPHINX_INTERNAL_H__ */

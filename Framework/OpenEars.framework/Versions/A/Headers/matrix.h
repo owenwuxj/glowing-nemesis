@@ -66,8 +66,8 @@ extern "C" {
 #endif
 
 /* Win32/WinCE DLL gunk */
-#include "sphinxbase_export.h"
-#include "prim_type.h"
+#include <sphinxbase/sphinxbase_export.h>
+#include <sphinxbase/prim_type.h>
 
 
 /**
@@ -208,7 +208,6 @@ void matrixadd(float32 **inout_a, float32 **b, int32 n);
 
 #endif /* MATRIX_H */ 
 
-
 /*
  * Log record.  Maintained by RCS.
  *

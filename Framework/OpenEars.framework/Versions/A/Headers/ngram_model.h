@@ -46,11 +46,11 @@
 #include <stdarg.h>
 
 /* Win32/WinCE DLL gunk */
-#include "sphinxbase_export.h"
-#include "prim_type.h"
-#include "cmd_ln.h"
-#include "logmath.h"
-#include "mmio.h"
+#include <sphinxbase/sphinxbase_export.h>
+#include <sphinxbase/prim_type.h>
+#include <sphinxbase/cmd_ln.h>
+#include <sphinxbase/logmath.h>
+#include <sphinxbase/mmio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -291,7 +291,20 @@ int32 ngram_ng_score(ngram_model_t *model, int32 wid, int32 *history,
  * unigram weight (interpolation with uniform) is not removed.
  */
 SPHINXBASE_EXPORT
-int32 ngram_prob(ngram_model_t *model, const char *word, ...);
+int32 ngram_probv(ngram_model_t *model, const char *word, ...);
+
+/**
+ * Get the "raw" log-probability for a general N-Gram.
+ *
+ * This returns the log-probability of an N-Gram, as defined in the
+ * language model file, before any language weighting, interpolation,
+ * or insertion penalty has been applied.
+ *
+ * @note When backing off to a unigram from a bigram or trigram, the
+ * unigram weight (interpolation with uniform) is not removed.
+ */
+SPHINXBASE_EXPORT
+int32 ngram_prob(ngram_model_t *model, const char *const *words, int32 n);
 
 /**
  * Quick "raw" probability lookup for a general N-Gram.
@@ -445,7 +458,7 @@ int32 ngram_model_add_word(ngram_model_t *model,
  *
  * This function assumes that the class tags have already been defined
  * as unigrams in the language model.  All words in the class
- * definition will be added to the lexicon as special in-class words.
+ * definition will be added to the vocabulary as special in-class words.
  * For this reason is is necessary that they not have the same names
  * as any words in the general unigram distribution.  The convention
  * is to suffix them with ":class_tag", where class_tag is the class

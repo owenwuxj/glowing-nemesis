@@ -10,10 +10,10 @@
 #import <AFNetworking.h>
 #import <ZipArchive.h>
 #import <AFNetworking/UIKit+AFNetworking.h>
-#import <OpenEars/PocketsphinxController.h> // Please note that unlike in previous versions of OpenEars, we now link the headers through the framework.
-#import <OpenEars/LanguageModelGenerator.h>
-#import <OpenEars/OpenEarsLogging.h>
-#import <OpenEars/AcousticModel.h>
+#import <OpenEars/OEPocketsphinxController.h> // Please note that unlike in previous versions of OpenEars, we now link the headers through the framework.
+#import <OpenEars/OELanguageModelGenerator.h>
+#import <OpenEars/OELogging.h>
+#import <OpenEars/OEAcousticModel.h>
 
 #import "TPWordNormalizer.h"
 #import "XMLDictionary.h"
@@ -59,9 +59,9 @@
 #pragma mark Lazy Allocation
 
 // Lazily allocated PocketsphinxController.
-- (PocketsphinxController *)pocketsphinxController {
+- (OEPocketsphinxController *)pocketsphinxController {
     if (_pocketsphinxController == nil) {
-        _pocketsphinxController = [[PocketsphinxController alloc] init];
+        _pocketsphinxController = [OEPocketsphinxController sharedInstance];
         //pocketsphinxController.verbosePocketSphinx = TRUE; // Uncomment me for verbose debug output
         //pocketsphinxController.outputAudio = TRUE;
         _pocketsphinxController.returnNullHypotheses = YES;
@@ -74,9 +74,9 @@
 }
 
 // Lazily allocated OpenEarsEventsObserver.
-- (OpenEarsEventsObserver *)openEarsEventsObserver {
+- (OEEventsObserver *)openEarsEventsObserver {
     if (_openEarsEventsObserver == nil) {
-        _openEarsEventsObserver = [[OpenEarsEventsObserver alloc] init];
+        _openEarsEventsObserver = [[OEEventsObserver alloc] init];
     }
     return _openEarsEventsObserver;
 }
@@ -92,7 +92,7 @@
     self.restartAttemptsDueToPermissionRequests = 0;
     self.startupFailedDueToLackOfPermissions = FALSE;
     
-    [OpenEarsLogging startOpenEarsLogging]; // Uncomment me for OpenEarsLogging
+    [OELogging startOpenEarsLogging]; // Uncomment me for OpenEarsLogging
     
     [self.openEarsEventsObserver setDelegate:self]; // Make this class the delegate of OpenEarsObserver so we can get all of the messages about what OpenEars is doing.
 
@@ -357,21 +357,16 @@
         // an utterance will have exactly one of the following required statements: "DO THE FOLLOWING" or "INSTRUCTION"...
     }
     
-    LanguageModelGenerator *languageModelGenerator = [[LanguageModelGenerator alloc] init];
-    NSError *error = [languageModelGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:@"grammarLangGenDict" forAcousticModelAtPath:[AcousticModel pathToModel:@"AcousticModelEnglish"]];
-    NSDictionary *grammarLangGenDict = nil;
+    OELanguageModelGenerator *languageModelGenerator = [[OELanguageModelGenerator alloc] init];
+    NSError *error = [languageModelGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:@"MyModelName" forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
     if ([error code] != noErr) {
-        NSLog(@"error: %@",[error description]);
+        NSLog(@"Dynamic language generator reported error %@", [error description]);
     } else {
-        
 //        NSLog(@"parserDidEndDocument, on Thread: %@", [NSThread currentThread]);
         
-        grammarLangGenDict = [error userInfo];
+        NSString *dictionaryPath = [languageModelGenerator pathToSuccessfullyGeneratedDictionaryWithRequestedName:@"MyModelName"];
+        NSString *lmPath = [languageModelGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:@"MyModelName"];
         
-        NSString *lmPath = [grammarLangGenDict objectForKey:@"LMPath"];
-        NSString *dictionaryPath = [grammarLangGenDict objectForKey:@"DictionaryPath"];
-        
-
         self.pathToGrammarToStartAppWith = lmPath; // We'll set our new .languagemodel file to be the one to get switched to when the words "CHANGE MODEL" are recognized.
         self.pathToDictionaryToStartAppWith = dictionaryPath; // We'll set our new dictionary to be the one to get switched to when the words "CHANGE MODEL" are recognized.
     }
@@ -383,7 +378,7 @@
     /*
      Create all the optioins from wordsInSentArray
      */
-    int numOfWords = [wordsInSentArray count];
+    NSUInteger numOfWords = [wordsInSentArray count];
     
     NSMutableArray *sentsArray = [NSMutableArray array];
     for (int idx=0; idx<numOfWords; idx++) {
@@ -475,10 +470,10 @@
     // Tricky way to determine the sentence id key: "I CHECK MY NEWS"
     for (NSString *sentIdKey in [self.preGrammarDict allKeys]) {
         origArrayLeftover = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:sentIdKey] componentsSeparatedByString:@" "]];
-        NSNumber *countWhole = [NSNumber numberWithInt:[origArrayLeftover count]];
+        NSNumber *countWhole = [NSNumber numberWithUnsignedInteger:[origArrayLeftover count]];
         
         [origArrayLeftover removeObjectsInArray:[resultString componentsSeparatedByString:@" "]];
-        NSNumber *countLeft = [NSNumber numberWithInt:[origArrayLeftover count]];
+        NSNumber *countLeft = [NSNumber numberWithUnsignedInteger:[origArrayLeftover count]];
         
         if ([countLeft floatValue]/[countWhole floatValue] <= (1.0-kPassPercentage/100.0)) {
             correctSentID = sentIdKey;
@@ -497,12 +492,12 @@
         
         // For loop to generate the <Word></Word>
         NSMutableArray *origArray = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:correctSentID] componentsSeparatedByString:@" "]];
-        int numOfWords = [origArray count];// if "6543" -> "six five four three"(should be one word!)
+        NSUInteger numOfWords = [origArray count];// if "6543" -> "six five four three"(should be one word!)
         
 //        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
         // TODO: should show word by word ?
-        int resultNumOfWords = [[resultString componentsSeparatedByString:@" "] count];
-        int leftoverNumOfWords = [origArrayLeftover count];
+        NSUInteger resultNumOfWords = [[resultString componentsSeparatedByString:@" "] count];
+        NSUInteger leftoverNumOfWords = [origArrayLeftover count];
         
         if (numOfWords == resultNumOfWords + leftoverNumOfWords) {
             // ------------------------------------------------------------
@@ -535,8 +530,8 @@
             for (int i = startingIdx; i<startingIdx+resultNumOfWords; i++) {
                 [theResult appendFormat:@"<Word id=\"%d\" trans=\"\" score=\"71\"></Word>",i];
             }
-            for (int i = startingIdx+resultNumOfWords; i<numOfWords; i++) {
-                [theResult appendFormat:@"<Word id=\"%d\" trans=\"\" score=\"51\"></Word>",i];
+            for (NSUInteger i = startingIdx+resultNumOfWords; i<numOfWords; i++) {
+                [theResult appendFormat:@"<Word id=\"%lu\" trans=\"\" score=\"51\"></Word>",(unsigned long)i];
             }
         } else {
             // error ?
@@ -570,8 +565,8 @@
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
-                                           acousticModelAtPath:[AcousticModel pathToModel:@"AcousticModelEnglish"]
-                                           languageModelIsJSGF:YES];
+                                           acousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]
+                                           languageModelIsJSGF:TRUE];
 }
 
 @end
