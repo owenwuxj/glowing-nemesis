@@ -186,19 +186,32 @@
 
 - (void)evaluateFiles:(NSString *)file {
     
+
+
+    
+    
         NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
         NSString *directory = documentsDirectoryURL.path;
         
         fileNameString = [NSString stringWithFormat:@"%@/%@",directory,file];
         self.wavFilePath = [NSString stringWithFormat:@"%@/%@.wav",directory,[file substringToIndex:[file length]-8]];
-        
-        NSData *xmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
+    
+    NSString *resultXmlFileName = [NSString stringWithFormat:@"%@.result",[fileNameString substringToIndex:[fileNameString length]-8]];
+    NSData *xmlData = [NSData dataWithContentsOfFile:resultXmlFileName];
+    NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
+    
+    if ([xmlString containsString:@"<TPResult version=\"1.0\" error=\""]) {
+        dispatch_semaphore_signal(self.sema);
+        return;
+    }
+    
+        NSData *contextXmlData = [[NSData alloc] initWithContentsOfFile:fileNameString];
         
         aSentence = nil;
         self.preGrammarDict = [NSMutableDictionary dictionary];
         
         // XML formatted Strings are strange
-        NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:xmlData];//[contextXml dataUsingEncoding:NSUTF8StringEncoding]];
+        NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:contextXmlData];//[contextXml dataUsingEncoding:NSUTF8StringEncoding]];
         xmlParser.delegate = self;
         
         if ([xmlParser parse] == NO ) {
