@@ -62,6 +62,7 @@
 - (OEPocketsphinxController *)pocketsphinxController {
     if (_pocketsphinxController == nil) {
         _pocketsphinxController = [OEPocketsphinxController sharedInstance];
+        [_pocketsphinxController setActive:YES error:nil];
         //pocketsphinxController.verbosePocketSphinx = TRUE; // Uncomment me for verbose debug output
         //pocketsphinxController.outputAudio = TRUE;
         _pocketsphinxController.returnNullHypotheses = YES;
@@ -557,7 +558,6 @@
 
 - (void) startListening {
     // But under normal circumstances you'll probably want to do continuous recognition as follows:
-    self.pocketsphinxController.returnNullHypotheses = TRUE;
     //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
     
 //    NSLog(@"startListening");
