@@ -574,7 +574,7 @@
     //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
     
 //    NSLog(@"startListening");
-    
+//    [self.pocketsphinxController setSecondsOfSilenceToDetect:15.0];
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
