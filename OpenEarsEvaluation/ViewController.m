@@ -463,6 +463,8 @@
         resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@",oeSentScore, qtSentScore];
     }
     
+    resultNodeString = [NSString stringWithFormat:@"%@ file:%@", resultNodeString, [[fileNameString componentsSeparatedByString:@"Documents"] lastObject]];
+    
     if (!resultArray) {
         resultArray = [NSMutableArray arrayWithObject:resultNodeString];
     } else {
@@ -575,6 +577,7 @@
     
 //    NSLog(@"startListening");
 //    [self.pocketsphinxController setSecondsOfSilenceToDetect:15.0];
+    
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
