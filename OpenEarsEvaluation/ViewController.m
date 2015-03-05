@@ -51,7 +51,7 @@
 
 @implementation ViewController
 
-#define kPassPercentage 59.0
+#define kPassPercentage 50.0
 
 #define kGetNbest // Uncomment this if you want to try out nbest
 
@@ -68,7 +68,7 @@
         _pocketsphinxController.returnNullHypotheses = YES;
 #ifdef kGetNbest
         _pocketsphinxController.returnNbest = TRUE;
-        _pocketsphinxController.nBestNumber = 1;
+        _pocketsphinxController.nBestNumber = 5;
 #endif
     }
     return _pocketsphinxController;
@@ -312,6 +312,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         self.countingLabel.text = [NSString stringWithFormat:@"Successful Count: %ld", self.countNum];
     });
+    
+//    [self.pocketsphinxController stopListening];
     
     dispatch_semaphore_signal(self.sema);
     
@@ -577,7 +579,11 @@
     
 //    NSLog(@"startListening");
 //    [self.pocketsphinxController setSecondsOfSilenceToDetect:15.0];
-    
+//    self.pocketsphinxController.pathToTestFile = self.wavFilePath;
+//    [self.pocketsphinxController startListeningWithLanguageModelAtPath:self.pathToGrammarToStartAppWith
+//                                                        dictionaryAtPath:self.pathToDictionaryToStartAppWith
+//                                                    acousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]
+//                                                    languageModelIsJSGF:YES];
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
