@@ -423,11 +423,27 @@
 #pragma mark -
 #pragma mark Private Methods
 
--(void) compareOpenEarsOutputString:(NSString *)aResult andQitaiXMLString:(NSString *)resultXmlString {// And write to disk
-    
+-(void) compareOpenEarsOutputString:(NSString *)aResult andQitaiXmlFileName:(NSString *)fileName {// And write to disk
+    // Read theResult as *****.result from Qitai
+    NSString *resultXmlFileName = [NSString stringWithFormat:@"%@.result",fileName];
+    NSData *xmlData = [NSData dataWithContentsOfFile:resultXmlFileName];
+    NSString *resultXmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
+
     NSDictionary * xmlDictionaryFromOE = [[XMLDictionaryParser sharedInstance] dictionaryWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
     NSDictionary * xmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:resultXmlString];
+
+
+    /*
+     For Geregory
+     / Read theResult as *****.context from Qitai
+     */
+    NSString *contextXmlFileName = [NSString stringWithFormat:@"%@.context",fileName];
+    NSData *contextXmlData = [NSData dataWithContentsOfFile:contextXmlFileName];
+    NSString *contextXmlString = [[NSString alloc] initWithData:contextXmlData encoding:NSUTF8StringEncoding];
+    NSDictionary * contextXmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:contextXmlString];
+
     
+    // Find the proper folder
     NSString *libDir = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString *priAppDir = [libDir stringByAppendingPathComponent: @"Private Documents"];
     if (![[NSFileManager defaultManager] fileExistsAtPath:priAppDir]) {
@@ -458,14 +474,34 @@
         isOEPassed = NO;
     }
 
+
+    /*
+     For Geregory
+     / Read theResult as *****.context from Qitai
+     */
+    NSString *resultSentID = xmlDictionaryFromQT[@"Sentence"][@"_id"];
+    NSString *displayTrans;
+    
+    if ([contextXmlDictionaryFromQT[@"Sentences"][@"Sentence"] isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *theDict = contextXmlDictionaryFromQT[@"Sentences"][@"Sentence"];
+        displayTrans = theDict[@"_display_trans"];;
+    } else {
+        for (NSDictionary *oneDict in contextXmlDictionaryFromQT[@"Sentences"][@"Sentence"]) {
+            if ([oneDict[@"_id"] isEqualToString:resultSentID]) {
+                displayTrans = oneDict[@"_display_trans"];
+            }
+        }
+    }
+    NSLog(@"%@",displayTrans);
+
     NSString *resultNodeString;
     if (isOEPassed != isQtPassed) {
-        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ DIFF:%@ Pass",oeSentScore, qtSentScore, isQtPassed?@"QT":@"OE"];
+        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ DIFF:%@ Pass  |||'%@'",oeSentScore, qtSentScore, isQtPassed?@"QT":@"OE", displayTrans];
     } else {
-        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@",oeSentScore, qtSentScore];
+        resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ NODIFFERENCE: |||'%@'",oeSentScore, qtSentScore, displayTrans];
     }
     
-    resultNodeString = [NSString stringWithFormat:@"%@ file:%@", resultNodeString, [[fileNameString componentsSeparatedByString:@"Documents"] lastObject]];
+    resultNodeString = [NSString stringWithFormat:@"%@ |||file:%@", resultNodeString, [[fileNameString componentsSeparatedByString:@"Documents"] lastObject]];
     
     if (!resultArray) {
         resultArray = [NSMutableArray arrayWithObject:resultNodeString];
@@ -563,12 +599,9 @@
     //    }
     
 
-    // TODO: Compare theResult with *****.result from Qitai
-    NSString *resultXmlFileName = [NSString stringWithFormat:@"%@.result",[fileNameString substringToIndex:[fileNameString length]-8]];
-    NSData *xmlData = [NSData dataWithContentsOfFile:resultXmlFileName];
-    NSString *xmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
     
-    [self compareOpenEarsOutputString:theResult andQitaiXMLString:xmlString];
+    
+    [self compareOpenEarsOutputString:theResult andQitaiXmlFileName:[fileNameString substringToIndex:[fileNameString length]-8]];
 }
 
 // The last class we're using here is LanguageModelGenerator but I don't think it's advantageous to lazily instantiate it. You can see how it's used below.
