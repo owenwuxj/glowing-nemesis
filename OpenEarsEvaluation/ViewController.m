@@ -78,7 +78,7 @@
         _pocketsphinxController.returnNullHypotheses = YES;
 #ifdef kGetNbest
         _pocketsphinxController.returnNbest = TRUE;
-        _pocketsphinxController.nBestNumber = 5;
+        _pocketsphinxController.nBestNumber = 150;
 #endif
     }
     return _pocketsphinxController;
@@ -336,11 +336,11 @@
     });
     
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self compareWithHypothesisArray:hypothesisArray];
     });
     
-    dispatch_semaphore_signal(self.sema);
+//    dispatch_semaphore_signal(self.sema);
     
 }
 #endif
@@ -481,6 +481,8 @@
     if (resultArray) {
         [resultArray writeToFile:[priAppDir stringByAppendingPathComponent:@"countList"]  atomically:YES];
     }
+    
+    dispatch_semaphore_signal(self.sema);
 }
 
 -(void)compareWithHypothesisArray:(NSArray*) hypothesisArray
@@ -494,9 +496,18 @@
             NSString *inputStringValue = [[[currentSentences objectForKey:key] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
             NSString *outputStringValue= [[[hypoDict objectForKey:@"Hypothesis"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
             
-            double outputInputRatio = (double)[outputStringValue componentsSeparatedByString:@" "].count/[inputStringValue componentsSeparatedByString:@" "].count;
-            if([inputStringValue containsString:outputStringValue] && outputInputRatio>kPassRateThresholdInSentence && outputInputRatio<=1.0)
+//            double outputInputRatio = (double)[outputStringValue componentsSeparatedByString:@" "].count/[inputStringValue componentsSeparatedByString:@" "].count;
+//            if([inputStringValue containsString:outputStringValue] && outputInputRatio>kPassRateThresholdInSentence && outputInputRatio<=1.0)
+//                correctCounter++;
+            if (outputStringValue == nil || outputStringValue.length == 0) continue;
+            
+            NSArray *refArray = [inputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            float distanceValue = [self compareArrayA:refArray withArrayB:[outputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+            NSLog(@"edit distance %f", distanceValue);
+            
+            if ((1.0 - distanceValue/refArray.count) > kPassRateThresholdInSentence) {
                 correctCounter++;
+            }
             
         }
         
@@ -521,6 +532,63 @@
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
                                            acousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]
                                            languageModelIsJSGF:TRUE];
+}
+
+-(float)compareArrayA:(NSArray *)arrayA withArrayB:(NSArray *)arrayB {
+    
+    // Step 1
+    int k, i, j, cost, * d, distance;
+    
+    NSInteger n = [arrayA count];
+    NSInteger m = [arrayB count];
+    
+    if( n++ != 0 && m++ != 0 ) {
+        
+        d = malloc( sizeof(int) * m * n );
+        
+        // Step 2
+        for( k = 0; k < n; k++)
+            d[k] = k;
+        
+        for( k = 0; k < m; k++)
+            d[ k * n ] = k;
+        
+        // Step 3 and 4
+        for( i = 1; i < n; i++ )
+            for( j = 1; j < m; j++ ) {
+                
+                // Step 5
+                if( [[arrayA objectAtIndex: i-1] isEqualToString:[arrayB objectAtIndex: j-1]] )
+                    cost = 0;
+                else
+                    cost = 1;
+                
+                // Step 6
+                d[ j * n + i ] = [self smallestOf: d [ (j - 1) * n + i ] + 1
+                                            andOf: d[ j * n + i - 1 ] +  1
+                                            andOf: d[ (j - 1) * n + i -1 ] + cost ];
+            }
+        
+        distance = d[ n * m - 1 ];
+        
+        free( d );
+        
+        return distance;
+    }
+    return 0.0;
+}
+
+// return the minimum of a, b and c
+- (int) smallestOf: (int) a andOf: (int) b andOf: (int) c
+{
+    int min = a;
+    if ( b < min )
+        min = b;
+    
+    if( c < min )
+        min = c;
+    
+    return min;
 }
 
 @end
