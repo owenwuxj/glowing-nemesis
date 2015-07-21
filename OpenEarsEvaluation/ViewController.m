@@ -182,9 +182,7 @@
                 
                 NSLog(@"### Finished: %@ ###", file);
                 
-                
             }
-
             
         }
         else {
@@ -223,7 +221,7 @@
     if ([xmlParser parse] == NO ) {
         NSLog(@"Failed to start xml parser");
     } else {
-        NSLog(@"%@",xmlData);
+//        NSLog(@"%@",xmlString);
     }
 }
 
@@ -295,12 +293,7 @@
 
 // An optional delegate method of OpenEarsEventsObserver which delivers the text of speech that Pocketsphinx heard and analyzed, along with its accuracy score and utterance ID.
 - (void) pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
-//    NSLog(@"### pocketsphinxDidReceiveHypothesis: The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
-
-//    if (!hypothesis) {
-//        [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:YES];
-//        return;
-//    }
+    
 }
 
 - (void) pocketsphinxDidStartListening {
@@ -337,17 +330,6 @@
 #ifdef kGetNbest
 - (void) pocketsphinxDidReceiveNBestHypothesisArray:(NSArray *)hypothesisArray { // Pocketsphinx has an n-best hypothesis dictionary.
     
-//    NSLog(@"### pocketsphinxDidReceiveNBestHypothesisArray");
-    
-    NSString *oneHypothesis = [[hypothesisArray firstObject] objectForKey:@"Hypothesis"];
-    if ([oneHypothesis isEqualToString:@""]) {
-//        NSLog(@"hypothesisArray is Empty");
-    }else {//if ([testValue length] > 1)
-//        NSLog(@"hypothesisArray is %@",oneHypothesis);
-    }
-    
-    [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:oneHypothesis waitUntilDone:YES];
-    
     self.countNum++;
     dispatch_async(dispatch_get_main_queue(), ^{
         self.countingLabel.text = [NSString stringWithFormat:@"Successful Count: %ld", self.countNum];
@@ -357,8 +339,6 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [self compareWithHypothesisArray:hypothesisArray];
     });
-
-//    [self.pocketsphinxController stopListening];
     
     dispatch_semaphore_signal(self.sema);
     
@@ -385,36 +365,6 @@
 - (void)parserDidEndDocument:(NSXMLParser *)parser{
     [self createLanguageModelWithWords:[NSArray arrayWithArray:currentWords]];
 }
-
-- (NSArray *)makeThePossibleArrayFromWordsArray:(NSArray *)wordsInSentArray {
-    /*
-     Create all the optioins from wordsInSentArray
-     */
-    NSUInteger numOfWords = [wordsInSentArray count];
-    
-    NSMutableArray *sentsArray = [NSMutableArray array];
-    for (int idx=0; idx<numOfWords; idx++) {
-        // Reset the input array
-        NSMutableArray *mWordsArray = [NSMutableArray arrayWithArray:wordsInSentArray];
-        
-        // Remove word(s) from the beginning
-        for (int i = 0; i < idx; i++) {
-            [mWordsArray removeObjectAtIndex:0];
-        }
-        
-        // Make the new array
-        NSMutableString *wordsString = [NSMutableString string];
-        
-        for (int i = 0; i < [mWordsArray count]; i++) {
-            [wordsString appendFormat:@"%@ ",[mWordsArray objectAtIndex:i]];
-        }
-        
-        [sentsArray addObject:[wordsString substringToIndex:[wordsString length]-1]];
-    }
-    
-    return [NSArray arrayWithArray:sentsArray];
-}
-
 
 #pragma mark -
 #pragma mark Private Methods
@@ -533,93 +483,6 @@
     }
 }
 
-/*
- Recognition Final Result String Process Method: "resultStringArray" is the (first) part of the CORRECT sentence, which is an array containing words seperated by spaces.
- */
--(void)generateTPResultXMLikeStringFromResultString:(NSString *)resultString{
-    NSString *correctSentID = nil;
-    NSMutableArray *origArrayLeftover;
-    
-    // Tricky way to determine the sentence id key: "I CHECK MY NEWS"
-    for (NSString *sentIdKey in [self.preGrammarDict allKeys]) {
-        origArrayLeftover = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:sentIdKey] componentsSeparatedByString:@" "]];
-        NSNumber *countWhole = [NSNumber numberWithUnsignedInteger:[origArrayLeftover count]];
-        
-        [origArrayLeftover removeObjectsInArray:[resultString componentsSeparatedByString:@" "]];
-        NSNumber *countLeft = [NSNumber numberWithUnsignedInteger:[origArrayLeftover count]];
-        
-        if ([countLeft floatValue]/[countWhole floatValue] <= (1.0-kPassPercentage/100.0)) {
-            correctSentID = sentIdKey;
-            break;// use the first hit anyway, 'coz faster speed:)
-        }
-    }
-    
-    NSMutableString *theResult = [[NSMutableString alloc] init];
-    if (!correctSentID) {
-        // error handling
-        //        <TPResult version="1.0" error="8"></TPResult>
-        int errCode = 8;
-        [theResult appendFormat:@"<TPResult version=\"1.0\" error=\"%d\"></TPResult>",errCode];
-    } else {
-        [theResult appendFormat:@"<TPResult version=\"1.0\"><Sentence id=\"%@\" score=\"71\">",correctSentID];
-        
-        // For loop to generate the <Word></Word>
-        NSMutableArray *origArray = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:correctSentID] componentsSeparatedByString:@" "]];
-        NSUInteger numOfWords = [origArray count];// if "6543" -> "six five four three"(should be one word!)
-        
-//        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
-        // TODO: should show word by word ?
-        NSUInteger resultNumOfWords = [[resultString componentsSeparatedByString:@" "] count];
-        NSUInteger leftoverNumOfWords = [origArrayLeftover count];
-        
-        if (numOfWords == resultNumOfWords + leftoverNumOfWords) {
-            // ------------------------------------------------------------
-            // Get the beginning index of the result string in orig string!
-            //
-            // Step 1: Generate all the possible arrays
-            NSMutableDictionary *tempDic = [NSMutableDictionary dictionary];
-            for (int idx = 0; idx <= numOfWords-resultNumOfWords; idx++) {
-                NSMutableString *tempString = [NSMutableString stringWithString:@""];
-                for (int i = idx; i < idx+resultNumOfWords; i++) {
-                    [tempString appendFormat:@"%@ ",[origArray objectAtIndex:i]];// Generate one possbile subset as a String
-                }
-                [tempDic setObject:[tempString substringToIndex:[tempString length]-1] forKey:[NSNumber numberWithInt:idx]];
-            }
-            
-            // Step 2: Get the Index
-            int startingIdx = 0;
-            for (NSNumber *theIdx in [tempDic allKeys]) {
-                if ([[tempDic objectForKey:theIdx] isEqualToString:resultString]) {
-                    startingIdx = [theIdx intValue];
-                }
-            }
-            // ------------------------------------------------------------
-            
-            
-            // Highlight the words
-            for (int i = 0; i<startingIdx; i++) {
-                [theResult appendFormat:@"<Word id=\"%d\" trans=\"\" score=\"51\"></Word>",i];
-            }
-            for (int i = startingIdx; i<startingIdx+resultNumOfWords; i++) {
-                [theResult appendFormat:@"<Word id=\"%d\" trans=\"\" score=\"71\"></Word>",i];
-            }
-            for (NSUInteger i = startingIdx+resultNumOfWords; i<numOfWords; i++) {
-                [theResult appendFormat:@"<Word id=\"%lu\" trans=\"\" score=\"51\"></Word>",(unsigned long)i];
-            }
-        } else {
-            // error ?
-        }
-        
-        [theResult appendString:@"</Sentence></TPResult>"];
-    }
-    
-    //    if (wrapperDelegate && [wrapperDelegate respondsToSelector:@selector(engineWrapperEndsRecognitionWithResults:)]) {
-    //        [wrapperDelegate engineWrapperEndsRecognitionWithResults:theResult];
-    //    }
-    
-    [self compareOpenEarsOutputString:theResult andQitaiXmlFileName:[fileNameString substringToIndex:[fileNameString length]-8]];
-}
-
 -(void)compareWithHypothesisArray:(NSArray*) hypothesisArray
 {
     NSString * result;
@@ -649,6 +512,7 @@
     else
         result = @"<TPResult version=\"1.0\"><Sentence id=\"-1\" score=\"00.00\"></Sentence></TPResult>";
     
+    [self compareOpenEarsOutputString:result andQitaiXmlFileName:[fileNameString substringToIndex:[fileNameString length]-8]];
 }
 
 - (void) startListening {
