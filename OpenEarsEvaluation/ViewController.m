@@ -336,7 +336,7 @@
     });
     
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self compareWithHypothesisArray:hypothesisArray];
     });
     
@@ -461,7 +461,7 @@
             }
         }
     }
-    NSLog(@"%@",displayTrans);
+//    NSLog(@"%@",displayTrans);
 
     NSString *resultNodeString;
     if (isOEPassed != isQtPassed) {
@@ -470,12 +470,12 @@
         resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ NODIFFERENCE: |||'%@'",oeSentScore, qtSentScore, displayTrans];
     }
     
-    resultNodeString = [NSString stringWithFormat:@"%@ |||file:%@", resultNodeString, [[fileNameString componentsSeparatedByString:@"Documents"] lastObject]];
-    
+    NSString *resultNodeStringNew = [NSString stringWithFormat:@"%@ |||file:%@", resultNodeString, [[fileName componentsSeparatedByString:@"Documents"] lastObject]];
+
     if (!resultArray) {
-        resultArray = [NSMutableArray arrayWithObject:resultNodeString];
+        resultArray = [NSMutableArray arrayWithObject:resultNodeStringNew];
     } else {
-        [resultArray addObject:resultNodeString];
+        [resultArray addObject:resultNodeStringNew];
     }
     
     if (resultArray) {
