@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 SoulGlad. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "ViewController2.h"
 #import <AFNetworking.h>
 #import <ZipArchive.h>
 #import <AFNetworking/UIKit+AFNetworking.h>
@@ -17,15 +17,12 @@
 
 #import "TPWordNormalizer.h"
 #import "XMLDictionary.h"
-#import "TextNormalizer.h"
+
 
 #define kFileDownloaded @"ZipFileDownloaded"
 #define kFileUnzipped @"FileUnzipped"
 
-#define kPassRateThresholdInSentence 0.59
-#define kPassPercentageInAllHypotheses 0.50
-
-@interface ViewController () <ZipArchiveDelegate>
+@interface ViewController2 () <ZipArchiveDelegate>
 {
     // output array to write to countList
     NSMutableArray *resultArray;
@@ -35,10 +32,6 @@
     
     // for comparison testing
     NSString *fileNameString;
-    
-    NSMutableArray * currentWords;
-    NSMutableDictionary * currentSentences;
-    bool isSpeechDetected;
 }
 
 @property (nonatomic, strong) NSMutableDictionary *preGrammarDict;
@@ -53,13 +46,10 @@
 @property (weak, nonatomic) IBOutlet UILabel *countingLabel;
 @property (nonatomic, assign) NSUInteger countNum;
 
-@property (nonatomic, copy) NSString * pathToLanguageModelToStartAppWith;
+
 @end
 
-@implementation ViewController
-
-@synthesize restartAttemptsDueToPermissionRequests,startupFailedDueToLackOfPermissions;
-@synthesize pathToGrammarToStartAppWith, pathToDictionaryToStartAppWith, pathToLanguageModelToStartAppWith;
+@implementation ViewController2
 
 #define kPassPercentage 50.0
 
@@ -106,7 +96,7 @@
     [OELogging startOpenEarsLogging]; // Uncomment me for OpenEarsLogging
     
     [self.openEarsEventsObserver setDelegate:self]; // Make this class the delegate of OpenEarsObserver so we can get all of the messages about what OpenEars is doing.
-
+    
     
     self.sema = dispatch_semaphore_create(0);
     self.queue = dispatch_queue_create("com.example.subsystem.taskAsr", NULL);
@@ -126,7 +116,7 @@
     } else if (!isFileUnzipped) {
         // TODO
     } else {
-
+        
         NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
         NSString *directory = documentsDirectoryURL.path;
         
@@ -134,8 +124,8 @@
             [self openEachFileAt:directory];
         });
     }
+    
 }
-
 - (IBAction)onStartButtonTapped:(id)sender {
     [self downloadFile];
 }
@@ -184,7 +174,8 @@
                 
                 
             }
-
+            
+            
             
         }
         else {
@@ -194,6 +185,9 @@
 }
 
 - (void)evaluateFiles:(NSString *)file {
+    
+    
+    
     
     
     NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
@@ -223,7 +217,7 @@
     if ([xmlParser parse] == NO ) {
         NSLog(@"Failed to start xml parser");
     } else {
-        NSLog(@"%@",xmlData);
+        //        NSLog(@"%@",xmlData);
     }
 }
 
@@ -252,7 +246,7 @@
             self.statusLabel.text = @"Network error, Press start button to download again";
             self.statusLabel.textColor = [UIColor redColor];
         }
-
+        
         
         [self unzipFile:filePath];
     }];
@@ -261,8 +255,6 @@
 }
 
 - (void)unzipFile:(NSURL *)filePath {
-    
-    
     NSString *zipPath = filePath.path;
     ZipArchive *zipArchive = [[ZipArchive alloc] init];
     [zipArchive UnzipOpenFile:zipPath];
@@ -274,7 +266,7 @@
         self.progressView.progress = percentage / 100.0f;
     };
     if (!success){
-
+        
         self.statusLabel.text = @"Unzipping Failed";
         self.statusLabel.textColor = [UIColor redColor];
         
@@ -283,67 +275,35 @@
         self.statusLabel.text = @"Unzipping Finished";
         self.statusLabel.textColor = [UIColor greenColor];
         
-//        [self downloadFile];
+        //        [self downloadFile];
     }
     
 }
-
-
 
 #pragma mark -
 #pragma mark OpenEarsEventsObserver delegate methods
 
 // An optional delegate method of OpenEarsEventsObserver which delivers the text of speech that Pocketsphinx heard and analyzed, along with its accuracy score and utterance ID.
 - (void) pocketsphinxDidReceiveHypothesis:(NSString *)hypothesis recognitionScore:(NSString *)recognitionScore utteranceID:(NSString *)utteranceID {
-//    NSLog(@"### pocketsphinxDidReceiveHypothesis: The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
-
-//    if (!hypothesis) {
-//        [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:YES];
-//        return;
-//    }
-}
-
-- (void) pocketsphinxDidStartListening {
-    isSpeechDetected = NO;
-}
-
-- (void) pocketsphinxDidDetectSpeech {
-    isSpeechDetected = YES;
-}
-
-
--(void) pocketsphinxTestRecognitionCompleted {
-    if(!isSpeechDetected)
-    {
-//        [self.sphinxController stopListening];
-    }
-}
-
-- (void) pocketsphinxFailedNoMicPermissions {
-    self.startupFailedDueToLackOfPermissions = TRUE;
-}
-
-
-- (void) micPermissionCheckCompleted:(BOOL)result {
-    if(result == TRUE) {
-        self.restartAttemptsDueToPermissionRequests++;
-        if(self.restartAttemptsDueToPermissionRequests == 1 && self.startupFailedDueToLackOfPermissions == TRUE) {
-            [self startListening]; // Only do this once.
-            self.startupFailedDueToLackOfPermissions = FALSE;
-        }
+    
+    //    NSLog(@"### pocketsphinxDidReceiveHypothesis: The received hypothesis is %@ with a score of %@ and an ID of %@", hypothesis, recognitionScore, utteranceID); // Log it.
+    
+    if (!hypothesis) {
+        [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:nil waitUntilDone:YES];
+        return;
     }
 }
 
 #ifdef kGetNbest
 - (void) pocketsphinxDidReceiveNBestHypothesisArray:(NSArray *)hypothesisArray { // Pocketsphinx has an n-best hypothesis dictionary.
     
-//    NSLog(@"### pocketsphinxDidReceiveNBestHypothesisArray");
+    //    NSLog(@"### pocketsphinxDidReceiveNBestHypothesisArray");
     
     NSString *oneHypothesis = [[hypothesisArray firstObject] objectForKey:@"Hypothesis"];
     if ([oneHypothesis isEqualToString:@""]) {
-//        NSLog(@"hypothesisArray is Empty");
+        //        NSLog(@"hypothesisArray is Empty");
     }else {//if ([testValue length] > 1)
-//        NSLog(@"hypothesisArray is %@",oneHypothesis);
+        //        NSLog(@"hypothesisArray is %@",oneHypothesis);
     }
     
     [self performSelectorOnMainThread:@selector(generateTPResultXMLikeStringFromResultString:) withObject:oneHypothesis waitUntilDone:YES];
@@ -353,12 +313,7 @@
         self.countingLabel.text = [NSString stringWithFormat:@"Successful Count: %ld", self.countNum];
     });
     
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        [self compareWithHypothesisArray:hypothesisArray];
-    });
-
-//    [self.pocketsphinxController stopListening];
+    //    [self.pocketsphinxController stopListening];
     
     dispatch_semaphore_signal(self.sema);
     
@@ -369,21 +324,70 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict{
     
-    if([elementName isEqualToString:@"Sentence"] )
-    {
-        NSString * sentence = [[[[TextNormalizer sharedNormalizer] normalizedStringWithInput:[attributeDict objectForKey:@"display_trans"]] stringByReplacingOccurrencesOfString:@"  " withString:@" "] uppercaseString];
-        [currentSentences setObject:sentence forKey:[NSNumber numberWithInt:[[attributeDict objectForKey:@"id"] intValue]]];
-        [currentWords addObject:sentence];
+    // Parsing context/input xml files
+    NSString *sentenceId = nil;
+    if ([elementName isEqualToString:@"Sentence"]) {
+        sentenceId = [attributeDict objectForKey:@"id"];
+        aSentence = [NSMutableString string];
+        if (sentenceId) {
+            /*
+             preGrammarDict = ["I CHECK MY NEWS",@"1";
+             "YES",@"2";
+             ...];
+             */
+            [self.preGrammarDict setValue:aSentence forKey:sentenceId];
+        }
+    }else if ([elementName isEqualToString:@"Word"]){
+        //
+        // Each number could be transformed into one word
+        //
+        NSString *temp = [attributeDict objectForKey:@"display_trans"];
+        NSArray *cleanWordArray = [[TPWordNormalizer manager] returnArrayByProcessWordString:temp];
+        //        NSLog(@"222 %@", [cleanWordArray firstObject]);
+        
+        // '1376' will be 'one three seven six'
+        for (NSString *oneNumber in cleanWordArray) {
+            [aSentence appendString:[oneNumber uppercaseString]];
+            [aSentence appendString:@" "];
+        }
     }
 }
 
-- (void)parserDidStartDocument:(NSXMLParser *)parser {
-    currentWords = [NSMutableArray new];
-    currentSentences = [NSMutableDictionary new];
-}
-
 - (void)parserDidEndDocument:(NSXMLParser *)parser{
-    [self createLanguageModelWithWords:[NSArray arrayWithArray:currentWords]];
+    // get rid the last space of each sentence
+    for (NSString *aKey in [self.preGrammarDict allKeys]) {
+        NSString *temp = [self.preGrammarDict objectForKey:aKey];
+        [self.preGrammarDict setObject:[temp substringToIndex:[temp length]-1] forKey:aKey];
+    }
+    
+    //    NSLog(@"parserDidEndDocument?%@",self.preGrammarDict);
+    
+    NSDictionary *grammarDict;
+    NSArray *theArray = [self.preGrammarDict allValues];
+    if ([theArray count] == 1) {
+        NSString *theSent = [theArray firstObject];
+        grammarDict = @{OneOfTheseCanBeSaidOnce:[self makeThePossibleArrayFromWordsArray:[theSent componentsSeparatedByString:@" "]]};
+        // The optional statement can be either "HELLO COMPUTER" or "GREETINGS ROBOT" or it can be omitted.
+    } else {
+        grammarDict = @{OneOfTheseWillBeSaidOnce:theArray};
+        // an utterance will have exactly one of the following required statements: "DO THE FOLLOWING" or "INSTRUCTION"...
+    }
+    
+    OELanguageModelGenerator *languageModelGenerator = [[OELanguageModelGenerator alloc] init];
+    NSError *error = [languageModelGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:@"MyModelName" forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+    if ([error code] != noErr) {
+        NSLog(@"Dynamic language generator reported error %@", [error description]);
+    } else {
+        //        NSLog(@"parserDidEndDocument, on Thread: %@", [NSThread currentThread]);
+        
+        NSString *dictionaryPath = [languageModelGenerator pathToSuccessfullyGeneratedDictionaryWithRequestedName:@"MyModelName"];
+        NSString *lmPath = [languageModelGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:@"MyModelName"];
+        
+        self.pathToGrammarToStartAppWith = lmPath; // We'll set our new .languagemodel file to be the one to get switched to when the words "CHANGE MODEL" are recognized.
+        self.pathToDictionaryToStartAppWith = dictionaryPath; // We'll set our new dictionary to be the one to get switched to when the words "CHANGE MODEL" are recognized.
+    }
+    
+    [self startListening];
 }
 
 - (NSArray *)makeThePossibleArrayFromWordsArray:(NSArray *)wordsInSentArray {
@@ -419,39 +423,16 @@
 #pragma mark -
 #pragma mark Private Methods
 
--(void)createLanguageModelWithWords:(NSArray*)words
-{
-    OELanguageModelGenerator *lmGenerator = [[OELanguageModelGenerator alloc] init];
-    NSString *name = @"generatedLanguageModel";
-    
-    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : words};
-    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
-    
-    //    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
-    if(err == nil) {
-        //        self.pathToLanguageModelToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedLanguageModelWithRequestedName:name];
-        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
-        self.pathToDictionaryToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedDictionaryWithRequestedName:name];
-        NSLog(@"\nlm %@ \ngrammar %@ \nDictionary\n%@", self.pathToLanguageModelToStartAppWith,
-              [NSString stringWithContentsOfFile:self.pathToGrammarToStartAppWith encoding:NSUTF8StringEncoding error:nil],
-              [NSString stringWithContentsOfFile:self.pathToDictionaryToStartAppWith encoding:NSUTF8StringEncoding error:nil]);
-        
-        [self startListening];
-    } else {
-        NSLog(@"Error Model: %@",[err localizedDescription]);
-    }
-}
-
 -(void) compareOpenEarsOutputString:(NSString *)aResult andQitaiXmlFileName:(NSString *)fileName {// And write to disk
     // Read theResult as *****.result from Qitai
     NSString *resultXmlFileName = [NSString stringWithFormat:@"%@.result",fileName];
     NSData *xmlData = [NSData dataWithContentsOfFile:resultXmlFileName];
     NSString *resultXmlString = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
-
+    
     NSDictionary * xmlDictionaryFromOE = [[XMLDictionaryParser sharedInstance] dictionaryWithData:[aResult dataUsingEncoding:NSUTF8StringEncoding]];
     NSDictionary * xmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:resultXmlString];
-
-
+    
+    
     /*
      For Geregory
      / Read theResult as *****.context from Qitai
@@ -460,7 +441,7 @@
     NSData *contextXmlData = [NSData dataWithContentsOfFile:contextXmlFileName];
     NSString *contextXmlString = [[NSString alloc] initWithData:contextXmlData encoding:NSUTF8StringEncoding];
     NSDictionary * contextXmlDictionaryFromQT = [[XMLDictionaryParser sharedInstance] dictionaryWithString:contextXmlString];
-
+    
     
     // Find the proper folder
     NSString *libDir = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
@@ -492,8 +473,8 @@
         oeSentScore = @"NOTPASS";
         isOEPassed = NO;
     }
-
-
+    
+    
     /*
      For Geregory
      / Read theResult as *****.context from Qitai
@@ -512,7 +493,7 @@
         }
     }
     NSLog(@"%@",displayTrans);
-
+    
     NSString *resultNodeString;
     if (isOEPassed != isQtPassed) {
         resultNodeString = [NSString stringWithFormat:@"%@---OE | QT---%@ DIFF:%@ Pass  |||'%@'",oeSentScore, qtSentScore, isQtPassed?@"QT":@"OE", displayTrans];
@@ -567,7 +548,7 @@
         NSMutableArray *origArray = [NSMutableArray arrayWithArray:[[self.preGrammarDict objectForKey:correctSentID] componentsSeparatedByString:@" "]];
         NSUInteger numOfWords = [origArray count];// if "6543" -> "six five four three"(should be one word!)
         
-//        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
+        //        NSArray *temp = [self makeThePossibleArrayFromWordsArray:origArray];
         // TODO: should show word by word ?
         NSUInteger resultNumOfWords = [[resultString componentsSeparatedByString:@" "] count];
         NSUInteger leftoverNumOfWords = [origArrayLeftover count];
@@ -617,41 +598,25 @@
     //        [wrapperDelegate engineWrapperEndsRecognitionWithResults:theResult];
     //    }
     
+    
+    
+    
     [self compareOpenEarsOutputString:theResult andQitaiXmlFileName:[fileNameString substringToIndex:[fileNameString length]-8]];
 }
 
--(void)compareWithHypothesisArray:(NSArray*) hypothesisArray
-{
-    NSString * result;
-    int correctSentenceId = -1;
-    for (NSNumber * key in currentSentences.allKeys) {
-        int correctCounter = 0;
-        
-        for (NSDictionary * hypoDict in hypothesisArray) {
-            NSString *inputStringValue = [[[currentSentences objectForKey:key] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-            NSString *outputStringValue= [[[hypoDict objectForKey:@"Hypothesis"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-            
-            double outputInputRatio = (double)[outputStringValue componentsSeparatedByString:@" "].count/[inputStringValue componentsSeparatedByString:@" "].count;
-            if([inputStringValue containsString:outputStringValue] && outputInputRatio>kPassRateThresholdInSentence && outputInputRatio<=1.0)
-                correctCounter++;
-            
-        }
-        
-        // if 50% out of 150 best hypothesis, which is more than 75 correct hits
-        if (correctCounter >= (ceil(hypothesisArray.count * kPassPercentageInAllHypotheses))) {
-            correctSentenceId = key.intValue;
-            break;
-        }
-    }
-    
-    if(correctSentenceId!=-1)
-        result = [NSString  stringWithFormat:@"<TPResult version=\"1.0\"><Sentence id=\"%i\" score=\"71.00\"></Sentence></TPResult>", correctSentenceId];
-    else
-        result = @"<TPResult version=\"1.0\"><Sentence id=\"-1\" score=\"00.00\"></Sentence></TPResult>";
-    
-}
+// The last class we're using here is LanguageModelGenerator but I don't think it's advantageous to lazily instantiate it. You can see how it's used below.
 
 - (void) startListening {
+    // But under normal circumstances you'll probably want to do continuous recognition as follows:
+    //    self.pocketsphinxController.continuousModel.exitListeningLoop = NO;
+    
+    //    NSLog(@"startListening");
+    //    [self.pocketsphinxController setSecondsOfSilenceToDetect:15.0];
+    //    self.pocketsphinxController.pathToTestFile = self.wavFilePath;
+    //    [self.pocketsphinxController startListeningWithLanguageModelAtPath:self.pathToGrammarToStartAppWith
+    //                                                        dictionaryAtPath:self.pathToDictionaryToStartAppWith
+    //                                                    acousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]
+    //                                                    languageModelIsJSGF:YES];
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
                                       usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
