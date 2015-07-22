@@ -371,25 +371,30 @@
 
 -(void)createLanguageModelWithWords:(NSArray*)words
 {
-    OELanguageModelGenerator *lmGenerator = [[OELanguageModelGenerator alloc] init];
-    NSString *name = @"generatedLanguageModel";
+//    OELanguageModelGenerator *lmGenerator = [[OELanguageModelGenerator alloc] init];
+//    NSString *name = @"generatedLanguageModel";
     
-    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : words};
-    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+//    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : words};
+//    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
     
-    //    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
-    if(err == nil) {
-        //        self.pathToLanguageModelToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedLanguageModelWithRequestedName:name];
-        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
-        self.pathToDictionaryToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedDictionaryWithRequestedName:name];
-        NSLog(@"\nlm %@ \ngrammar %@ \nDictionary\n%@", self.pathToLanguageModelToStartAppWith,
-              [NSString stringWithContentsOfFile:self.pathToGrammarToStartAppWith encoding:NSUTF8StringEncoding error:nil],
-              [NSString stringWithContentsOfFile:self.pathToDictionaryToStartAppWith encoding:NSUTF8StringEncoding error:nil]);
-        
+//    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+    
+//    NSString *myCorpus = [[NSBundle mainBundle] pathForResource:@"EF_sample_corpus" ofType:@"txt"];
+//    NSError *err = [lmGenerator generateLanguageModelFromTextFile:myCorpus withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+    
+//    if(err == nil) {
+//        self.pathToLanguageModelToStartAppWith = @"/Users/owenwu/Library/Developer/CoreSimulator/Devices/7A078163-4CBA-491F-B717-5DF58ACE3884/data/Containers/Data/Application/E9F870E2-6F18-4E32-9B91-E7DCBCF099CA/Library/Caches/generatedLanguageModel.arpa";
+////
+////        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
+//        self.pathToDictionaryToStartAppWith = @"/Users/owenwu/Library/Developer/CoreSimulator/Devices/7A078163-4CBA-491F-B717-5DF58ACE3884/data/Containers/Data/Application/E9F870E2-6F18-4E32-9B91-E7DCBCF099CA/Library/Caches/generatedLanguageModel.dic";
+//    NSLog(@"\nlm %@ \ngrammar %@ \nDictionary %@", [NSString stringWithContentsOfFile:self.pathToLanguageModelToStartAppWith encoding:NSUTF8StringEncoding error:nil],
+//              [NSString stringWithContentsOfFile:self.pathToGrammarToStartAppWith encoding:NSUTF8StringEncoding error:nil],
+//              [NSString stringWithContentsOfFile:self.pathToDictionaryToStartAppWith encoding:NSUTF8StringEncoding error:nil]);
+    
         [self startListening];
-    } else {
-        NSLog(@"Error Model: %@",[err localizedDescription]);
-    }
+//    } else {
+//        NSLog(@"Error Model: %@",[err localizedDescription]);
+//    }
 }
 
 -(void) compareOpenEarsOutputString:(NSString *)aResult andQitaiXmlFileName:(NSString *)fileName {// And write to disk
@@ -496,18 +501,19 @@
             NSString *inputStringValue = [[[currentSentences objectForKey:key] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
             NSString *outputStringValue= [[[hypoDict objectForKey:@"Hypothesis"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
             
-//            double outputInputRatio = (double)[outputStringValue componentsSeparatedByString:@" "].count/[inputStringValue componentsSeparatedByString:@" "].count;
-//            if([inputStringValue containsString:outputStringValue] && outputInputRatio>kPassRateThresholdInSentence && outputInputRatio<=1.0)
-//                correctCounter++;
-            if (outputStringValue == nil || outputStringValue.length == 0) continue;
-            
-            NSArray *refArray = [inputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-            float distanceValue = [self compareArrayA:refArray withArrayB:[outputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
-            NSLog(@"edit distance %f", distanceValue);
-            
-            if ((1.0 - distanceValue/refArray.count) > kPassRateThresholdInSentence) {
+            double outputInputRatio = (double)[outputStringValue componentsSeparatedByString:@" "].count/[inputStringValue componentsSeparatedByString:@" "].count;
+            if([inputStringValue containsString:outputStringValue] && outputInputRatio>kPassRateThresholdInSentence && outputInputRatio<=1.0)
                 correctCounter++;
-            }
+            
+//            if (outputStringValue == nil || outputStringValue.length == 0) continue;
+//            
+//            NSArray *refArray = [inputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+//            float distanceValue = [self compareArrayA:refArray withArrayB:[outputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+//            NSLog(@"edit distance %f", distanceValue);
+//            
+//            if ((1.0 - distanceValue/refArray.count) > kPassRateThresholdInSentence) {
+//                correctCounter++;
+//            }
             
         }
         
@@ -527,11 +533,13 @@
 }
 
 - (void) startListening {
+    NSString *lmPath = [[NSBundle mainBundle] pathForResource:@"generatedLanguageModel" ofType:@"arpa"];
+    NSString *dicPath = [[NSBundle mainBundle] pathForResource:@"generatedLanguageModel" ofType:@"dic"];
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
-                                      usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
-                                              dictionaryAtPath:self.pathToDictionaryToStartAppWith
+                                      usingLanguageModelAtPath:lmPath
+                                              dictionaryAtPath:dicPath
                                            acousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]
-                                           languageModelIsJSGF:TRUE];
+                                           languageModelIsJSGF:FALSE];
 }
 
 -(float)compareArrayA:(NSArray *)arrayA withArrayB:(NSArray *)arrayB {

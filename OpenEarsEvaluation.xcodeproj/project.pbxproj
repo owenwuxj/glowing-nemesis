@@ -7,10 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		13980AE61AA6B404009184DF /* AcousticModelEnglish.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 13980AE41AA6B404009184DF /* AcousticModelEnglish.bundle */; };
 		13980AE71AA6B404009184DF /* OpenEars.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13980AE51AA6B404009184DF /* OpenEars.framework */; };
 		13B7A2D01B5DDD59008F5A5B /* TextNormalizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B7A2CF1B5DDD59008F5A5B /* TextNormalizer.m */; };
 		13B7A2D31B5DDDA8008F5A5B /* ViewController2.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B7A2D21B5DDDA8008F5A5B /* ViewController2.m */; };
+		13B7A2D91B5E3706008F5A5B /* AcousticModelEnglish.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 13B7A2D81B5E3706008F5A5B /* AcousticModelEnglish.bundle */; };
+		13C280B31B5F46BE005E723A /* EF_sample_corpus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 13C280B21B5F46BE005E723A /* EF_sample_corpus.txt */; };
+		13C280B61B5F6BBC005E723A /* generatedLanguageModel.arpa in Resources */ = {isa = PBXBuildFile; fileRef = 13C280B41B5F6BBC005E723A /* generatedLanguageModel.arpa */; };
+		13C280B71B5F6BBC005E723A /* generatedLanguageModel.dic in Resources */ = {isa = PBXBuildFile; fileRef = 13C280B51B5F6BBC005E723A /* generatedLanguageModel.dic */; };
 		13D27AD81AA1A10C00F3C937 /* TPWordNormalizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 13D27AD71AA1A10C00F3C937 /* TPWordNormalizer.m */; };
 		13D27ADC1AA1A12600F3C937 /* XMLDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 13D27ADB1AA1A12600F3C937 /* XMLDictionary.m */; };
 		A49F5E42D869690DCFEE51F3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7EC25B6599F5167D369AD8 /* libPods.a */; };
@@ -34,12 +37,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		13980AE41AA6B404009184DF /* AcousticModelEnglish.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = AcousticModelEnglish.bundle; sourceTree = "<group>"; };
 		13980AE51AA6B404009184DF /* OpenEars.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEars.framework; sourceTree = "<group>"; };
 		13B7A2CE1B5DDD59008F5A5B /* TextNormalizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextNormalizer.h; sourceTree = "<group>"; };
 		13B7A2CF1B5DDD59008F5A5B /* TextNormalizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextNormalizer.m; sourceTree = "<group>"; };
 		13B7A2D11B5DDDA8008F5A5B /* ViewController2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController2.h; sourceTree = "<group>"; };
 		13B7A2D21B5DDDA8008F5A5B /* ViewController2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController2.m; sourceTree = "<group>"; };
+		13B7A2D81B5E3706008F5A5B /* AcousticModelEnglish.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = AcousticModelEnglish.bundle; sourceTree = "<group>"; };
+		13C280B21B5F46BE005E723A /* EF_sample_corpus.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = EF_sample_corpus.txt; sourceTree = "<group>"; };
+		13C280B41B5F6BBC005E723A /* generatedLanguageModel.arpa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generatedLanguageModel.arpa; sourceTree = "<group>"; };
+		13C280B51B5F6BBC005E723A /* generatedLanguageModel.dic */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generatedLanguageModel.dic; sourceTree = "<group>"; };
 		13D27AD61AA1A10C00F3C937 /* TPWordNormalizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TPWordNormalizer.h; sourceTree = "<group>"; };
 		13D27AD71AA1A10C00F3C937 /* TPWordNormalizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TPWordNormalizer.m; sourceTree = "<group>"; };
 		13D27ADA1AA1A12600F3C937 /* XMLDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLDictionary.h; sourceTree = "<group>"; };
@@ -85,7 +91,7 @@
 		13D27ACD1AA1A07300F3C937 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
-				13980AE41AA6B404009184DF /* AcousticModelEnglish.bundle */,
+				13B7A2D81B5E3706008F5A5B /* AcousticModelEnglish.bundle */,
 				13980AE51AA6B404009184DF /* OpenEars.framework */,
 			);
 			path = Framework;
@@ -154,6 +160,9 @@
 		BF45A9ED1A9F142A00C6629C /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				13C280B21B5F46BE005E723A /* EF_sample_corpus.txt */,
+				13C280B41B5F6BBC005E723A /* generatedLanguageModel.arpa */,
+				13C280B51B5F6BBC005E723A /* generatedLanguageModel.dic */,
 				BF45A9EE1A9F142A00C6629C /* Info.plist */,
 				BF45A9EF1A9F142A00C6629C /* main.m */,
 			);
@@ -269,9 +278,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF45A9F91A9F142A00C6629C /* Main.storyboard in Resources */,
-				13980AE61AA6B404009184DF /* AcousticModelEnglish.bundle in Resources */,
+				13C280B61B5F6BBC005E723A /* generatedLanguageModel.arpa in Resources */,
+				13C280B71B5F6BBC005E723A /* generatedLanguageModel.dic in Resources */,
+				13B7A2D91B5E3706008F5A5B /* AcousticModelEnglish.bundle in Resources */,
 				BF45A9FE1A9F142A00C6629C /* LaunchScreen.xib in Resources */,
 				BF45A9FB1A9F142A00C6629C /* Images.xcassets in Resources */,
+				13C280B31B5F46BE005E723A /* EF_sample_corpus.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
