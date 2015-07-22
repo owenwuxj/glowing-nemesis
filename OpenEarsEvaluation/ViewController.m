@@ -78,7 +78,7 @@
         _pocketsphinxController.returnNullHypotheses = YES;
 #ifdef kGetNbest
         _pocketsphinxController.returnNbest = TRUE;
-        _pocketsphinxController.nBestNumber = 150;
+        _pocketsphinxController.nBestNumber = 100;
 #endif
     }
     return _pocketsphinxController;
@@ -374,13 +374,13 @@
     OELanguageModelGenerator *lmGenerator = [[OELanguageModelGenerator alloc] init];
     NSString *name = @"generatedLanguageModel";
     
-    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : words};
-    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+//    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : words};
+//    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
     
-    //    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
     if(err == nil) {
-        //        self.pathToLanguageModelToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedLanguageModelWithRequestedName:name];
-        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
+        self.pathToLanguageModelToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedLanguageModelWithRequestedName:name];
+//        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
         self.pathToDictionaryToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedDictionaryWithRequestedName:name];
         NSLog(@"\nlm %@ \ngrammar %@ \nDictionary\n%@", self.pathToLanguageModelToStartAppWith,
               [NSString stringWithContentsOfFile:self.pathToGrammarToStartAppWith encoding:NSUTF8StringEncoding error:nil],
@@ -492,30 +492,46 @@
     for (NSNumber * key in currentSentences.allKeys) {
         int correctCounter = 0;
         
+        BOOL isPassed = NO;
+        
         for (NSDictionary * hypoDict in hypothesisArray) {
             NSString *inputStringValue = [[[currentSentences objectForKey:key] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
             NSString *outputStringValue= [[[hypoDict objectForKey:@"Hypothesis"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
             
+            /*
+              Comment out the old/live solution to use the Edit Distance instead
+             */
 //            double outputInputRatio = (double)[outputStringValue componentsSeparatedByString:@" "].count/[inputStringValue componentsSeparatedByString:@" "].count;
 //            if([inputStringValue containsString:outputStringValue] && outputInputRatio>kPassRateThresholdInSentence && outputInputRatio<=1.0)
 //                correctCounter++;
+            
             if (outputStringValue == nil || outputStringValue.length == 0) continue;
             
             NSArray *refArray = [inputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
             float distanceValue = [self compareArrayA:refArray withArrayB:[outputStringValue componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
-            NSLog(@"edit distance %f", distanceValue);
+            NSLog(@"edit distance %f / %@", distanceValue, outputStringValue);
+            
             
             if ((1.0 - distanceValue/refArray.count) > kPassRateThresholdInSentence) {
                 correctCounter++;
+                isPassed = YES;
             }
             
         }
-        
-        // if 50% out of 150 best hypothesis, which is more than 75 correct hits
-        if (correctCounter >= (ceil(hypothesisArray.count * kPassPercentageInAllHypotheses))) {
+
+        if (isPassed) {
             correctSentenceId = key.intValue;
             break;
         }
+
+        /*
+         Comment out the old/live solution to use the Edit Distance instead
+         */
+        // if 50% out of 150 best hypothesis, which is more than 75 correct hits
+//        if (correctCounter >= (ceil(hypothesisArray.count * kPassPercentageInAllHypotheses))) {
+//            correctSentenceId = key.intValue;
+//            break;
+//        }
     }
     
     if(correctSentenceId!=-1)
@@ -528,10 +544,10 @@
 
 - (void) startListening {
     [self.pocketsphinxController runRecognitionOnWavFileAtPath:self.wavFilePath
-                                      usingLanguageModelAtPath:self.pathToGrammarToStartAppWith
+                                      usingLanguageModelAtPath:self.pathToLanguageModelToStartAppWith
                                               dictionaryAtPath:self.pathToDictionaryToStartAppWith
                                            acousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]
-                                           languageModelIsJSGF:TRUE];
+                                           languageModelIsJSGF:FALSE];
 }
 
 -(float)compareArrayA:(NSArray *)arrayA withArrayB:(NSArray *)arrayB {
