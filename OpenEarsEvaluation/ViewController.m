@@ -22,7 +22,7 @@
 #define kFileDownloaded @"ZipFileDownloaded"
 #define kFileUnzipped @"FileUnzipped"
 
-#define kPassRateThresholdInSentence 0.59
+#define kPassRateThresholdInSentence 0.79
 #define kPassPercentageInAllHypotheses 0.50
 
 @interface ViewController () <ZipArchiveDelegate>
@@ -336,7 +336,7 @@
     });
     
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [self compareWithHypothesisArray:hypothesisArray];
     });
     
@@ -374,13 +374,13 @@
     OELanguageModelGenerator *lmGenerator = [[OELanguageModelGenerator alloc] init];
     NSString *name = @"generatedLanguageModel";
     
-//    NSDictionary *grammarDict =  @{OneOfTheseCanBeSaidOnce : words};
-//    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+    NSDictionary *grammarDict =  @{ThisWillBeSaidOnce : words};
+    NSError *err = [lmGenerator generateGrammarFromDictionary:grammarDict withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
     
-    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
+//    NSError *err = [lmGenerator generateLanguageModelFromArray:words withFilesNamed:name forAcousticModelAtPath:[OEAcousticModel pathToModel:@"AcousticModelEnglish"]];
     if(err == nil) {
         self.pathToLanguageModelToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedLanguageModelWithRequestedName:name];
-//        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
+        self.pathToGrammarToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedGrammarWithRequestedName:name];
         self.pathToDictionaryToStartAppWith = [lmGenerator pathToSuccessfullyGeneratedDictionaryWithRequestedName:name];
         NSLog(@"\nlm %@ \ngrammar %@ \nDictionary\n%@", self.pathToLanguageModelToStartAppWith,
               [NSString stringWithContentsOfFile:self.pathToGrammarToStartAppWith encoding:NSUTF8StringEncoding error:nil],
