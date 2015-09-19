@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>5053351B-F9EE-4BFC-ACAD-B4AC53E02782</string>
+	<key>IDESourceControlProjectName</key>
+	<string>OpenEarsEvaluation</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>D4273FD9D82B1FC2649F362733637FF3A4DBEA48</key>
+		<string>https://github.com/owenwuef/glowing-nemesis</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>OpenEarsEvaluation.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>D4273FD9D82B1FC2649F362733637FF3A4DBEA48</key>
+		<string>..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/owenwuef/glowing-nemesis</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>D4273FD9D82B1FC2649F362733637FF3A4DBEA48</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D4273FD9D82B1FC2649F362733637FF3A4DBEA48</string>
+			<key>IDESourceControlWCCName</key>
+			<string>OpenEarsEvaluation</string>
+		</dict>
+	</array>
+</dict>
+</plist>
